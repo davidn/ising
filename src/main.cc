@@ -81,9 +81,9 @@ Lattice::Lattice(size_type num): sz(num)
 
 void Lattice::randomise()
 {
-	for(vector<vector<char> >::iterator it = this->begin(); it<this->end(); it++)
+	for(vector<vector<char> >::iterator it = this->begin(); it<this->end(); ++it)
 	{
-		for(vector<char>::iterator at = it->begin(); at<it->end(); at++)
+		for(vector<char>::iterator at = it->begin(); at<it->end(); ++at)
 		{
 			*at = (rand() > RAND_MAX/2) ? -1 : 1;
 		}
@@ -135,15 +135,15 @@ double Lattice::E()
 			Eret -= muH * this->at(i)[j];
 		}
 	}
-	return Eret;
+	return Eret / (sz * sz);
 }
 
 double Lattice::M()
 {
 	double Mret = 0;
-	for(vector<vector<char> >::iterator it = this->begin(); it<this->end(); it++)
+	for(vector<vector<char> >::iterator it = this->begin(); it<this->end(); ++it)
 	{
-		for(vector<char>::iterator at = it->begin(); at<it->end(); at++)
+		for(vector<char>::iterator at = it->begin(); at<it->end(); ++at)
 		{
 			Mret += *at;
 		}
@@ -154,9 +154,9 @@ double Lattice::M()
 ostream & operator<<(std::ostream &os, Lattice &lattice)
 {
 #ifdef OUTPUT_DOTS
-	for(vector<vector<char> >::iterator it = lattice.begin(); it<lattice.end(); it++)
+	for(vector<vector<char> >::iterator it = lattice.begin(); it<lattice.end(); ++it)
 	{
-		for(vector<char>::iterator at = it->begin(); at < it->end(); at++)
+		for(vector<char>::iterator at = it->begin(); at < it->end(); ++at)
 		{
 			os << ((*at > 0) ? '.' : 'O');
 		}
