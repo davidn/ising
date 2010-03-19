@@ -280,7 +280,7 @@ int main(int argc, char ** argv)
 				sleep(1);
 			state_out << '\f' << lattice;
 		}
-		output << kT << " " << lattice.M() << " " << lattice.E() << " " << counter << endl;
+		output << kT/J << " " << lattice.M() << " " << lattice.E() << " " << counter << endl;
 		if (kTto == kTfrom)
 		{
 			break;
