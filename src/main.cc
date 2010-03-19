@@ -288,8 +288,10 @@ int main(int argc, char ** argv)
 		"set xlabel 'kT/J'\n"\
 		"set ylabel 'Magnetization'\n"\
 		"set y2label 'Energy'\n"\
+		"set ytics nomirror\n"\
+		"set y2tics\n"\
 		"plot '"<<output_filename << "' u 1:(abs($2)) t 'Magnetization',"\
-		"'"<<output_filename << "' u 1:(abs($3)) t 'Energy' axes x1y2\n";
+		"'"<<output_filename << "' u 1:3 t 'Energy' axes x1y2\n";
 	
 	return 0;
 }
