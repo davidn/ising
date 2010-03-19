@@ -54,7 +54,7 @@ class Lattice : public vector<vector<char> >
 	public:
 		Lattice(size_type num);
 		void randomise();
-		int step(Lattice &new_lattice);
+		int step();
 		double M();
 		double E();
 };
@@ -76,32 +76,31 @@ void Lattice::randomise()
 }
 
 /* Step the lattice, return the net change in total spins */
-int Lattice::step(Lattice &new_lattice)
+int Lattice::step()
 {
-	int change = 0;
+	int change = 0,i,j;
 	double d_E;
-	for (int i=0; i < this->size(); i++)
+	for (int num=0; num < this->size()*this->size(); num++)
 	{
-		for (int j = 0; j < this->size(); j++)
+		i= rand() * this->size() / RAND_MAX;
+		j= rand() * this->size() / RAND_MAX;
+		/* Using 
+		 d_E = J * Sum over neighbours ( initial*neighbour - final*neighbour) + muH * ( initial - final )
+		 Note that final = - initial, giving
+		 d_E = 2 J * Sum over neighbours(initial*neighbour) + 2 muH * initial*/
+		d_E = 2 * J * this->at(i)[j] * ( this->at((i+1)%this->size())[j]
+		                                +this->at((i-1)%this->size())[j]
+		                                +this->at(i)[(j+1)%this->size()]
+		                                +this->at(i)[(j-1)%this->size()] );
+		/*d_E increases if spin is initially positive and goes to negative*/
+		d_E += 2 * muH * this->at(i)[j];
+		if (d_E < 0 || boltzmann(d_E) > RAND())
 		{
-			/* Using 
-d_E = J * Sum over neighbours ( initial*neighbour - final*neighbour) + muH * ( initial - final )
-			 Note that final = - initial, giving
-			 d_E = 2 J * Sum over neighbours(initial*neighbour) + 2 muH * initial*/
-			d_E = 2 * J * this->at(i)[j] * ( this->at((i+1)%this->size())[j]
-			                                +this->at((i-1)%this->size())[j]
-			                                +this->at(i)[(j+1)%this->size()]
-			                                +this->at(i)[(j-1)%this->size()] );
-			/*d_E increases if spin is initially positive and goes to negative*/
-			d_E += 2 * muH * this->at(i)[j];
-			if (d_E < 0 || boltzmann(d_E) > RAND())
-			{
-				change += 2 * (new_lattice[i][j] = - this->at(i)[j]);
-			}
-			else
-			{
-				new_lattice[i][j] = this->at(i)[j];
-			}
+			change += 2 * (this->at(i)[j] = - this->at(i)[j]);
+		}
+		else
+		{
+			this->at(i)[j] = this->at(i)[j];
 		}
 	}
 	return change;
@@ -248,32 +247,25 @@ int main(int argc, char ** argv)
 	if (state_filename != NULL)
 		state_out.open(state_filename, fstream::trunc | fstream::out);
 	
-	Lattice * lattice = new Lattice(size);
-    Lattice * next_lattice = new Lattice(size);
-	Lattice * tmp_lattice;
+	Lattice lattice = Lattice(size);
 
 	for (kT=kTfrom; kT <= kTto; kT += (kTto-kTfrom)/num_temps)
 	{
-		lattice->randomise();
+		lattice.randomise();
 		if (verbose)
 			cout << "Temperature: " << kT << endl;
-		state_out << *lattice;
+		state_out << lattice;
 		for (counter = 0;;counter ++)
 		{
-			if ((lattice->step(*next_lattice) < 0.1 * size ) && automatic)
+			if ((lattice.step() < 0.1 * size ) && automatic)
 				break;
 			if ((!automatic) && (counter >= time))
 				break;
 			if (slow)
 				sleep(1);
-			state_out << endl;
-			tmp_lattice = lattice;
-			lattice = next_lattice;
-			next_lattice = tmp_lattice;
-
-			state_out << *lattice;
+			state_out << endl << lattice;
 		}
-		output << kT << " " << lattice->M() << " " << lattice->E() << " " << counter << endl;
+		output << kT << " " << lattice.M() << " " << lattice.E() << " " << counter << endl;
 		if (kTto == kTfrom)
 		{
 			break;
