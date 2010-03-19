@@ -45,7 +45,20 @@ double kT;
 
 void usage()
 {
-	cout << "Usage:" << endl;
+	cout << "Usage: " PACKAGE " [options]\n"\
+		"Simulate a 2D ferromagnet using a monte-carlo ising model.\n\n"\
+		"  -S               Run the simulation slowly, so progression can be seen.\n"\
+		"  -t time          Run each temperature run for time iterations.\n"\
+		"  -s size          Use a size by size lattice.\n"\
+		"  -J J             Set interation parameter to J.\n"\
+		"  -H H             Set external Magnetic field to H.\n"\
+		"  -o output.dat    Save the data to output.dat.\n"\
+		"  -d               Draw progress.\n"\
+		"  -1 temp          Lowest temperature to simulate.\n"\
+		"  -2 temp          Highest temperature to simulate.\n"\
+		"  -n number        Number of temperature steps to take.\n"\
+		"  -V               Be verbose.\n"\
+		"  -h               Show this help text.\n";
 	exit(1);
 }
 
@@ -157,11 +170,11 @@ int main(int argc, char ** argv)
 {
 	bool automatic=true,slow=false,verbose=false;
 	int opt, change, size = DEFAULT_SIZE, time, num_temps=1, counter;
-	const char *state_filename="-", *output_filename="ising.dat";
+	const char *state_filename="/dev/null", *output_filename="ising.dat";
 	double kTfrom=DEFAULT_kT, kTto=DEFAULT_kT;
 	Gnuplot gp;
 	fstream state_out, output;
-	while ((opt = getopt(argc,argv,"aSt:s:J:H:o:g:1:2:n:Vh?")) != -1)
+	while ((opt = getopt(argc,argv,"St:s:J:H:o:d1:2:n:Vh?")) != -1)
 	{
 		switch(opt)
 		{
@@ -219,7 +232,7 @@ int main(int argc, char ** argv)
 				output_filename = optarg;
 				break;
 			case 'g':
-				state_filename = optarg;
+				state_filename = "-";
 				break;
 			case 'V':
 				verbose = true;
