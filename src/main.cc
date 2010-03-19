@@ -30,6 +30,7 @@
 
 using namespace std;
 
+/* Print some documentation. */
 void usage()
 {
 	cout << "Usage: " PACKAGE " [options]\n"\
@@ -57,6 +58,7 @@ int main(int argc, char ** argv)
 	double J=DEFAULT_J, muH=DEFAULT_muH, kTfrom=DEFAULT_kT, kTto=DEFAULT_kT;
 	Gnuplot gp;
 	fstream state_out, output;
+	/* Read command line options. */
 	while ((opt = getopt(argc,argv,"St:s:J:H:o:d1:2:n:Vh?")) != -1)
 	{
 		switch(opt)
@@ -97,7 +99,7 @@ int main(int argc, char ** argv)
 				slow = true;
 				break;
 			case 't':
-				automatic = false;
+				automatic = false;  // If a time is specfied don't do auto end detection
 				time = atoi(optarg);
 				if (time < 1)
 				{
@@ -126,7 +128,7 @@ int main(int argc, char ** argv)
 				usage();
 		}
 	}
-
+	/* We need from and to in the right order or later a loop will go on forever */
 	if (kTfrom>kTto)
 	{
 		double kTtmp = kTto;
@@ -134,7 +136,8 @@ int main(int argc, char ** argv)
 		kTfrom = kTtmp;
 		cerr << "Swapping temperatures 1 and 2." << endl;
 	}
-	
+
+	/* Open files for writing.  TODO: check for errors */
 	if (strcmp(output_filename,"-")==0)
 		output_filename = "/dev/stdout";
 	if (output_filename != NULL)
@@ -144,34 +147,49 @@ int main(int argc, char ** argv)
 		state_filename = "/dev/stdout";
 	if (state_filename != NULL)
 		state_out.open(state_filename, fstream::trunc | fstream::out);
-	
+
+	/* Initialise a lattice object */
 	Lattice lattice = Lattice(size,J,muH);
 
+	/* Do a run at each temperature. We detect kTfrom==kTto later*/
 	for (lattice.kT=kTfrom; lattice.kT <= kTto; lattice.kT += (kTto-kTfrom)/num_temps)
 	{
-		lattice.randomise();
 		if (verbose)
 			cout << "Temperature: " << lattice.kT << endl;
+		/* We want to start with a random lattice, and have it printed.*/
+		lattice.randomise();
 		state_out << lattice;
+		/* counter is just keeping track of number of steps, ending is more complex */
 		for (counter = 0;;counter ++)
 		{
+			/* This always calls lattice.step().  We will then end the loop if 
+			 * we are in automatic mode and the net spin change < 0.1*size. This
+			 * condition is a naive attempt at detecting equilibrium.*/
 			if ((lattice.step() < 0.1 * size ) && automatic)
 				break;
+			/* If we're not in automatic mode, just end after time iterations.*/
 			if ((!automatic) && (counter >= time))
 				break;
+			/* slow allows realtime viewing of the equilbriation */
 			if (slow)
 				sleep(1);
+			/* Print the state after each iteration. */
 			state_out << '\f' << lattice;
 		}
+		/* After each temperature run, print the temperature (units of Kb/J),
+		 * magnetization, energy and number of iterations taken. */
 		output << lattice.kT/lattice.J << " " << lattice.M() << " " << lattice.E() << " " << counter << endl;
+		/* if kTto==kTfrom the kT increment is zero, and we therefore must only
+		 * do one run, so break in this case. */
 		if (kTto == kTfrom)
-		{
 			break;
-		}
+		/* Print some fairly usless info.*/
 		if (verbose)
 			cout << "  Took " << counter << " steps" << endl;
 	}
+	/* Close the output to ensure it is flushed for gnuplot to read. */
 	output.close();
+	/* Tell gnuplot to draw us a graph.*/
 	gp << \
 		"set term png size 1024,768\n"\
 		"set output 'graph.png'\n"\
