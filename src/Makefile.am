@@ -16,7 +16,9 @@ bin_PROGRAMS = ising
 ising_SOURCES = \
 	main.cc\
 	../gnuplot-iostream/gnuplot-iostream.cc \
-	../gnuplot-iostream/gnuplot-iostream.h
+	../gnuplot-iostream/gnuplot-iostream.h \
+	lattice.h \
+	lattice.cc
 
 ising_LDFLAGS = 
 
