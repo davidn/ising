@@ -1,0 +1,3 @@
+[submodule "gnuplot-iostream"]
+	path = gnuplot-iostream
+	url = git://gitorious.org/gnuplot-iostream/gnuplot-iostream.git

@@ -14,9 +14,13 @@ AM_CFLAGS =\
 bin_PROGRAMS = ising
 
 ising_SOURCES = \
-	main.cc
+	main.cc\
+	../gnuplot-iostream/gnuplot-iostream.cc \
+	../gnuplot-iostream/gnuplot-iostream.h
 
 ising_LDFLAGS = 
 
-ising_LDADD = 
+ising_LDADD = \
+	-lboost_iostreams\
+	-lutil
 
