@@ -57,9 +57,11 @@ class Lattice : public vector<vector<char> >
 		int step();
 		double M();
 		double E();
+	private:
+		size_type sz;
 };
 
-Lattice::Lattice(size_type num)
+Lattice::Lattice(size_type num): sz(num)
 {
 	this->resize(num, vector<char>::vector(num));
 }
@@ -80,18 +82,18 @@ int Lattice::step()
 {
 	int change = 0,i,j;
 	double d_E;
-	for (int num=0; num < this->size()*this->size(); num++)
+	for (int num=0; num < sz*sz; num++)
 	{
-		i= rand() * this->size() / RAND_MAX;
-		j= rand() * this->size() / RAND_MAX;
+		i= rand() * sz / RAND_MAX;
+		j= rand() * sz / RAND_MAX;
 		/* Using 
 		 d_E = J * Sum over neighbours ( initial*neighbour - final*neighbour) + muH * ( initial - final )
 		 Note that final = - initial, giving
 		 d_E = 2 J * Sum over neighbours(initial*neighbour) + 2 muH * initial*/
-		d_E = 2 * J * this->at(i)[j] * ( this->at((i+1)%this->size())[j]
-		                                +this->at((i-1)%this->size())[j]
-		                                +this->at(i)[(j+1)%this->size()]
-		                                +this->at(i)[(j-1)%this->size()] );
+		d_E = 2 * J * this->at(i)[j] * ( this->at((i+1)%sz)[j]
+		                                +this->at((i-1)%sz)[j]
+		                                +this->at(i)[(j+1)%sz]
+		                                +this->at(i)[(j-1)%sz] );
 		/*d_E increases if spin is initially positive and goes to negative*/
 		d_E += 2 * muH * this->at(i)[j];
 		if (d_E < 0 || boltzmann(d_E) > RAND())
@@ -109,14 +111,14 @@ int Lattice::step()
 double Lattice::E()
 {
 	double Eret = 0;
-	for (int i=0; i < this->size(); i++)
+	for (int i=0; i < sz; i++)
 	{
-		for (int j = 0; j < this->size(); j++)
+		for (int j = 0; j < sz; j++)
 		{
-			Eret -= J * this->at(i)[j] * ( this->at((i+1)%this->size())[j]
-			                                +this->at((i-1)%this->size())[j]
-			                                +this->at(i)[(j+1)%this->size()]
-			                                +this->at(i)[(j-1)%this->size()] );
+			Eret -= J * this->at(i)[j] * ( this->at((i+1)%sz)[j]
+			                                +this->at((i-1)%sz)[j]
+			                                +this->at(i)[(j+1)%sz]
+			                                +this->at(i)[(j-1)%sz] );
 			Eret -= muH * this->at(i)[j];
 		}
 	}
@@ -133,7 +135,7 @@ double Lattice::M()
 			Mret += *at;
 		}
 	}
-	return Mret / (this->size() * this->size());
+	return Mret / (sz * sz);
 }
 
 ostream & operator<<(std::ostream &os, Lattice &lattice)
