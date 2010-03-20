@@ -195,6 +195,7 @@ int main(int argc, char ** argv)
 		"set output 'graph.png'\n"\
 		"set xlabel 'kT/J'\n"\
 		"set ylabel 'Magnetization'\n"\
+		"set xtics rotate by -45 add ('Tc(Onsager)' 2.269)\n"\
 		"set y2label 'Energy'\n"\
 		"set ytics nomirror\n"\
 		"set y2tics\n"\
