@@ -66,7 +66,7 @@ int Lattice::step()
 		                                +this->at(i)[(j-1)%sz] )
 			/*d_E increases if spin is initially positive and goes to negative*/
 			+ 2 * muH * this->at(i)[j];
-		if (d_E < 0 || exp(-d_E/kT) > rand()/RAND_MAX)
+		if (d_E < 0 || exp(-d_E/kT) * RAND_MAX > rand())
 			change += 2 * (this->at(i)[j] = - this->at(i)[j]);
 		/* NB: we flip the spin           ^^^    here  */
 	}
