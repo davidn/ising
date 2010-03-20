@@ -60,14 +60,14 @@ int Lattice::step()
 		 d_E = J * Sum over neighbours ( initial*neighbour - final*neighbour) + muH * ( initial - final )
 		 Note that final = - initial, giving
 		 d_E = 2 J * Sum over neighbours(initial*neighbour) + 2 muH * initial*/
-		d_E = 2 * J * this->at(i)[j] * ( this->at((i+1)%sz)[j]
-		                                +this->at((i-1)%sz)[j]
-		                                +this->at(i)[(j+1)%sz]
-		                                +this->at(i)[(j-1)%sz] )
+		d_E = 2 * J * (*this)[i][j] * ( (*this)[(i+1)%sz][j]
+		                                +(*this)[(i-1)%sz][j]
+		                                +(*this)[i][(j+1)%sz]
+		                                +(*this)[i][(j-1)%sz] )
 			/*d_E increases if spin is initially positive and goes to negative*/
-			+ 2 * muH * this->at(i)[j];
+			+ 2 * muH * (*this)[i][j];
 		if (d_E < 0 || exp(-d_E/kT) * RAND_MAX > rand())
-			change += 2 * (this->at(i)[j] = - this->at(i)[j]);
+			change += 2 * ((*this)[i][j] = - (*this)[i][j]);
 		/* NB: we flip the spin           ^^^    here  */
 	}
 	return change;
@@ -81,11 +81,11 @@ double Lattice::E()
 	{
 		for (int j = 0; j < sz; j++)
 		{
-			Eret -= J * this->at(i)[j] * ( this->at((i+1)%sz)[j]
-			                                +this->at((i-1)%sz)[j]
-			                                +this->at(i)[(j+1)%sz]
-			                                +this->at(i)[(j-1)%sz] );
-			Eret -= muH * this->at(i)[j];
+			Eret -= J * (*this)[i][j] * ( (*this)[(i+1)%sz][j]
+			                             +(*this)[(i-1)%sz][j]
+			                             +(*this)[i][(j+1)%sz]
+			                             +(*this)[i][(j-1)%sz] );
+			Eret -= muH * (*this)[i][j];
 		}
 	}
 	return Eret / (sz * sz);
