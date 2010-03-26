@@ -146,6 +146,11 @@ int main(int argc, char ** argv)
 	if (output_filename != NULL)
 		output = fopen(output_filename, "w");
 
+	char command[255];
+	command[0] = '\0';
+	strncat(command,dirname(argv[0]),255);
+	strncat(command,"/ising",255);
+	
 	/* Do a run at each temperature. We detect kTfrom==kTto later*/
 	for (kT=kTfrom; kT <= kTto; kT += (kTto-kTfrom)/num_temps)
 	{
@@ -155,15 +160,11 @@ int main(int argc, char ** argv)
 		{
 			freopen(output_filename,"a",stdout);
 			char tempstr[31];
-			char command[255];
-			command[0] = '\0';
-			strncat(command,dirname(argv[0]),255);
-			strncat(command,"/ising",255);
 			sprintf(tempstr,"%.15E",kT);
 			parameters.push_back("-T");
 			parameters.push_back(tempstr);
 			parameters.push_back(NULL);
-			execv("ising",&parameters[0]);
+			execv(command,&parameters[0]);
 			perror("Running subprocess");
 			exit(1);
 		}
