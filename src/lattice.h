@@ -36,6 +36,8 @@ private:
 	double J;
 	double muH;
 	size_type sz;
+	double exp_lookup[10];
+	void initalise_exp_lookup ();
 };
 
 std::ostream & operator<<(std::ostream &os, Lattice &lattice);
