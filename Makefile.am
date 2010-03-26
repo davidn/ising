@@ -1,7 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 ## Created by Anjuta
 
-SUBDIRS = src 
+SUBDIRS = src \
+	tests
 
 isingdocdir = ${prefix}/doc/ising
 isingdoc_DATA = \
