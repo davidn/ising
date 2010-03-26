@@ -11,18 +11,22 @@ AM_CFLAGS =\
 	 -Wall\
 	 -g
 
-bin_PROGRAMS = ising
+bin_PROGRAMS = ising \
+	runs
+
+runs_SOURCES = \
+	runs.cc\
+	../gnuplot-iostream/gnuplot-iostream.cc \
+	../gnuplot-iostream/gnuplot-iostream.h
+
+runs_LDADD = \
+	-lboost_iostreams \
+	-lutil
 
 ising_SOURCES = \
-	main.cc\
-	../gnuplot-iostream/gnuplot-iostream.cc \
-	../gnuplot-iostream/gnuplot-iostream.h \
+	ising.cc\
 	lattice.h \
 	lattice.cc
 
 ising_LDFLAGS = 
-
-ising_LDADD = \
-	-lboost_iostreams\
-	-lutil
 

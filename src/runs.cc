@@ -17,14 +17,14 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define DEFAULT_SIZE 100
-
 #define OUTPUT_DOTS
 
-#include <iostream>
-#include <fstream>
+#include <cstdio>
 #include <unistd.h>
-#include "lattice.h"
+#include <sys/wait.h>
+#include <libgen.h>
+#include <errno.h>
+#include <vector>
 #include "../config.h"
 #include "../gnuplot-iostream/gnuplot-iostream.h"
 
@@ -35,7 +35,6 @@ void usage()
 {
 	cout << "Usage: " PACKAGE " [options]\n"\
 		"Simulate a 2D ferromagnet using a monte-carlo ising model.\n\n"\
-		"  -S               Run the simulation slowly, so progression can be seen.\n"\
 		"  -t time          Run each temperature run for time iterations.\n"\
 		"  -s size          Use a size by size lattice.\n"\
 		"  -J J             Set interation parameter to J.\n"\
@@ -52,30 +51,42 @@ void usage()
 
 int main(int argc, char ** argv)
 {
-	bool automatic=true,slow=false,verbose=false;
-	int opt, change, size = DEFAULT_SIZE, time, num_temps=1, counter;
-	const char *state_filename="/dev/null", *output_filename="ising.dat";
-	double J=DEFAULT_J, muH=DEFAULT_muH, kTfrom=DEFAULT_kT, kTto=DEFAULT_kT;
+	int opt, num_temps=1,i=0,parallel=1;
+	vector<pid_t> children;
+	pid_t tempid;
+	const char *output_filename="ising.dat";
+	double kTfrom=DEFAULT_kT, kTto=DEFAULT_kT,kT;
+	vector<char *> parameters;
 	Gnuplot gp;
-	fstream state_out, output;
+	FILE * output;
+	parameters.push_back("");
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"St:s:J:H:o:d1:2:n:Vh?")) != -1)
+	while ((opt = getopt(argc,argv,"t:s:J:H:o:1:2:j:n:h?")) != -1)
 	{
 		switch(opt)
 		{
 			case 's':
-				size = atoi(optarg);
-				if (size < 1)
+				if (atoi(optarg) < 1)
 				{
 					cout << "Lattice too small!" << endl;
 					exit(2);
 				}
+				parameters.push_back("-s");
+				parameters.push_back(optarg);
 				break;
 			case 'n':
 				num_temps = atoi(optarg);
 				if (num_temps < 1)
 				{
 					cout << "Must have at least 1 temperature!" << endl;
+					exit(2);
+				}
+				break;
+			case 'j':
+				parallel = atoi(optarg);
+				if (num_temps < 1)
+				{
+					cout << "Must have at least 1 subprocess!" << endl;
 					exit(2);
 				}
 				break;
@@ -95,32 +106,25 @@ int main(int argc, char ** argv)
 					exit(2);
 				}
 				break;
-			case 'S':
-				slow = true;
-				break;
 			case 't':
-				automatic = false;  // If a time is specfied don't do auto end detection
-				time = atoi(optarg);
-				if (time < 1)
+				if (atoi(optarg) < 1)
 				{
 					cout << "Must have at least 1 step!" << endl;
 					exit(2);
 				}
+				parameters.push_back("-t");
+				parameters.push_back(optarg);
 				break;
 			case 'J':
-				J = atof(optarg);
+				parameters.push_back("-J");
+				parameters.push_back(optarg);
 				break;
 			case 'H':
-				muH = atof(optarg);
+				parameters.push_back("-H");
+				parameters.push_back(optarg);
 				break;
 			case 'o':
 				output_filename = optarg;
-				break;
-			case 'g':
-				state_filename = "-";
-				break;
-			case 'V':
-				verbose = true;
 				break;
 			case 'h':
 			case '?':
@@ -128,6 +132,7 @@ int main(int argc, char ** argv)
 				usage();
 		}
 	}
+	
 	/* We need from and to in the right order or later a loop will go on forever */
 	if (kTfrom>kTto)
 	{
@@ -141,54 +146,41 @@ int main(int argc, char ** argv)
 	if (strcmp(output_filename,"-")==0)
 		output_filename = "/dev/stdout";
 	if (output_filename != NULL)
-		output.open(output_filename, fstream::trunc | fstream::out);
-
-	if (strcmp(state_filename,"-")==0)
-		state_filename = "/dev/stdout";
-	if (state_filename != NULL)
-		state_out.open(state_filename, fstream::trunc | fstream::out);
-
-	/* Initialise a lattice object */
-	Lattice lattice = Lattice(size,J,muH);
+		output = fopen(output_filename, "w");
 
 	/* Do a run at each temperature. We detect kTfrom==kTto later*/
-	for (lattice.kT=kTfrom; lattice.kT <= kTto; lattice.kT += (kTto-kTfrom)/num_temps)
+	for (kT=kTfrom; kT <= kTto; kT += (kTto-kTfrom)/num_temps)
 	{
-		if (verbose)
-			cout << "Temperature: " << lattice.kT << endl;
-		/* We want to start with a random lattice, and have it printed.*/
-		lattice.randomise();
-		state_out << lattice;
-		/* counter is just keeping track of number of steps, ending is more complex */
-		for (counter = 0;;counter ++)
+		if (children.size() >= parallel)
+			children.erase(find(children.begin(),children.end(),wait(NULL)));
+		if((tempid=fork())==0)
 		{
-			/* This always calls lattice.step().  We will then end the loop if 
-			 * we are in automatic mode and the net spin change < 0.1*size. This
-			 * condition is a naive attempt at detecting equilibrium.*/
-			if ((lattice.step() < 0.1 * size ) && automatic)
-				break;
-			/* If we're not in automatic mode, just end after time iterations.*/
-			if ((!automatic) && (counter >= time))
-				break;
-			/* slow allows realtime viewing of the equilbriation */
-			if (slow)
-				sleep(1);
-			/* Print the state after each iteration. */
-			state_out << '\f' << lattice;
+			freopen(output_filename,"a",stdout);
+			char tempstr[31];
+			char command[255];
+			command[0] = '\0';
+			strncat(command,dirname(argv[0]),255);
+			strncat(command,"/ising",255);
+			sprintf(tempstr,"%.15E",kT);
+			parameters.push_back("-T");
+			parameters.push_back(tempstr);
+			parameters.push_back(NULL);
+			execv("ising",&parameters[0]);
+			perror("Running subprocess");
+			exit(1);
 		}
-		/* After each temperature run, print the temperature (units of Kb/J),
-		 * magnetization, energy and number of iterations taken. */
-		output << lattice.kT/lattice.J << " " << lattice.M() << " " << lattice.E() << " " << counter << endl;
+		children.push_back(tempid);
 		/* if kTto==kTfrom the kT increment is zero, and we therefore must only
 		 * do one run, so break in this case. */
 		if (kTto == kTfrom)
 			break;
-		/* Print some fairly usless info.*/
-		if (verbose)
-			cout << "  Took " << counter << " steps" << endl;
 	}
+
+	for(vector<pid_t>::iterator it = children.begin(); it != children.end(); ++it)
+		waitpid(*it,NULL,0);
+	
 	/* Close the output to ensure it is flushed for gnuplot to read. */
-	output.close();
+	fclose(output);
 	/* Tell gnuplot to draw us a graph.*/
 	gp << \
 		"set term png size 1024,768\n"\

@@ -23,10 +23,6 @@
 #include <vector>
 #include <ostream>
 
-#define DEFAULT_kT 1
-#define DEFAULT_muH 0
-#define DEFAULT_J 1
-
 class Lattice : public std::vector<std::vector<char> > 
 {
 public:

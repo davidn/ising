@@ -20,6 +20,7 @@
 #include <vector>
 #include <cstdlib>
 #include <cmath>
+#include "../config.h"
 #include "lattice.h"
 
 using namespace std;
