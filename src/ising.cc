@@ -21,6 +21,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <cmath>
+#include <ctime>
 #include "../config.h"
 #include "lattice.h"
 #include "../gnuplot-iostream/gnuplot-iostream.h"
@@ -46,7 +47,7 @@ void usage()
 int main(int argc, char ** argv)
 {
 	bool automatic=true,slow=false,do_output=false;
-	int opt, size = DEFAULT_SIZE, time, counter, stabilised=0, condition, change;
+	int opt, size = DEFAULT_SIZE, iterations, counter, stabilised=0, condition, change;
 	const char *state_filename="/dev/null";
 	double J=DEFAULT_J, muH=DEFAULT_muH, kT=DEFAULT_kT;
 #ifdef OUTPUT_DOTS
@@ -82,8 +83,8 @@ int main(int argc, char ** argv)
 				break;
 			case 't':
 				automatic = false;  // If a time is specfied don't do auto end detection
-				time = atoi(optarg);
-				if (time < 1)
+				iterations = atoi(optarg);
+				if (iterations < 1)
 			{
 				cout << "Must have at least 1 step!" << endl;
 				exit(2);
@@ -124,6 +125,10 @@ int main(int argc, char ** argv)
 			"set cblabel 'Spin Direction'\n";
 #endif
 	}
+
+	/* Lets have a different seed each time */
+	srand(time(NULL));
+	
 	/* Initialise a lattice object */
 	Lattice lattice = Lattice(size,J,muH,kT);
 	lattice.randomise();
@@ -159,7 +164,7 @@ int main(int argc, char ** argv)
 		}
 		else
 		/* If we're not in automatic mode, just end after time iterations.*/
-			if (counter >= time)
+			if (counter >= iterations)
 				break;
 #ifdef OUTPUT_DOTS
 		/* slow allows realtime viewing of the equilbriation. */
