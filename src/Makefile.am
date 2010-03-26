@@ -26,7 +26,13 @@ runs_LDADD = \
 ising_SOURCES = \
 	ising.cc\
 	lattice.h \
-	lattice.cc
+	lattice.cc \
+	../gnuplot-iostream/gnuplot-iostream.cc \
+	../gnuplot-iostream/gnuplot-iostream.h
+
+ising_LDADD = \
+	-lboost_iostreams \
+	-lutil
 
 ising_LDFLAGS = 
 

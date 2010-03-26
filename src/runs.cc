@@ -17,8 +17,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define OUTPUT_DOTS
-
 #include <cstdio>
 #include <unistd.h>
 #include <sys/wait.h>

@@ -17,8 +17,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define OUTPUT_DOTS
-
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
@@ -46,11 +44,16 @@ void usage()
 
 int main(int argc, char ** argv)
 {
-	bool automatic=true,slow=false;
+	bool automatic=true,slow=false,do_output=false;
 	int opt, size = DEFAULT_SIZE, time, counter;
 	const char *state_filename="/dev/null";
 	double J=DEFAULT_J, muH=DEFAULT_muH, kT=DEFAULT_kT;
+#ifdef OUTPUT_DOTS
 	fstream state_out;
+#elif OUTPUT_GNUPLOT
+	Gnuplot state_out;
+	//ostream &state_out = cout;
+#endif
 	/* Read command line options. */
 	while ((opt = getopt(argc,argv,"St:s:J:H:dT:h?")) != -1)
 	{
@@ -92,6 +95,7 @@ int main(int argc, char ** argv)
 				muH = atof(optarg);
 				break;
 			case 'd':
+				do_output = true;
 				state_filename = "/dev/stderr";
 				break;
 			case 'h':
@@ -101,17 +105,31 @@ int main(int argc, char ** argv)
 		}
 	}
 
-	/* Open files for writing.  TODO: check for errors */
-	if (strcmp(state_filename,"-")==0)
-		state_filename = "/dev/stdout";
-	if (state_filename != NULL)
-		state_out.open(state_filename, fstream::trunc | fstream::out);
-
+	if (do_output)
+	{
+#ifdef OUTPUT_DOTS
+		/* Open files for writing.  TODO: check for errors */
+		if (strcmp(state_filename,"-")==0)
+			state_filename = "/dev/stdout";
+		if (state_filename != NULL)
+			state_out.open(state_filename, fstream::trunc | fstream::out);
+#elif OUTPUT_GNUPLOT
+		state_out << "set term gif animate\n"\
+			"unset key\n"\
+			"set view map\n"\
+			"set output 'progression.gif'\n"\
+			"unset tics\n"\
+			"set cbtics (-1, 1)\n"\
+			"set cblabel 'Spin Direction'\n";
+#endif
+	}
 	/* Initialise a lattice object */
 	Lattice lattice = Lattice(size,J,muH,kT);
 	lattice.randomise();
-	
-	state_out << lattice;
+	if (do_output)
+	{
+		state_out << lattice;
+	}
 	/* counter is just keeping track of number of steps, ending is more complex */
 	for (counter = 0;;counter ++)
 	{
@@ -127,7 +145,14 @@ int main(int argc, char ** argv)
 		if (slow)
 			sleep(1);
 		/* Print the state after each iteration. */
-		state_out << '\f' << lattice;
+		if (do_output)
+		{
+#ifdef OUTPUT_DOTS
+			state_out << '\f' << lattice;
+#elif OUTPUT_GNUPLOT
+			state_out << lattice;
+#endif
+		}
 	}
 	cout << lattice.kT/lattice.J << ' ' << lattice.M() << ' ' << lattice.E() << ' ' << counter << endl;
 	return 0;

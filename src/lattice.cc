@@ -120,8 +120,17 @@ ostream & operator<<(std::ostream &os, Lattice &lattice)
 		}
 		os << endl;
 	}
-#else
-	/* TODO: some kind of output for gnuplot to go to a pretty animation */
+#elif OUTPUT_GNUPLOT
+	os << "splot '-' matrix with image\n";
+	for(vector<vector<char> >::iterator it = lattice.begin(); it<lattice.end(); ++it)
+	{
+		for(vector<char>::iterator at = it->begin(); at < it->end(); ++at)
+		{
+			os << (int)*at << ' ';
+		}
+		os << endl;
+	}
+	os << "e\ne\n";
 #endif
 }
 
