@@ -31,10 +31,10 @@ public:
 	int step();
 	double M();
 	double E();
+private:
 	double kT;
 	double J;
 	double muH;
-private:
 	size_type sz;
 };
 

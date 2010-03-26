@@ -154,6 +154,6 @@ int main(int argc, char ** argv)
 #endif
 		}
 	}
-	cout << lattice.kT/lattice.J << ' ' << lattice.M() << ' ' << lattice.E() << ' ' << counter << endl;
+	cout << kT/J << ' ' << lattice.M() << ' ' << lattice.E() << ' ' << counter << endl;
 	return 0;
 }
