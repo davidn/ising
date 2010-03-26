@@ -20,6 +20,7 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include <cmath>
 #include "../config.h"
 #include "lattice.h"
 #include "../gnuplot-iostream/gnuplot-iostream.h"
@@ -45,7 +46,7 @@ void usage()
 int main(int argc, char ** argv)
 {
 	bool automatic=true,slow=false,do_output=false;
-	int opt, size = DEFAULT_SIZE, time, counter;
+	int opt, size = DEFAULT_SIZE, time, counter, stabilised=0, condition, change;
 	const char *state_filename="/dev/null";
 	double J=DEFAULT_J, muH=DEFAULT_muH, kT=DEFAULT_kT;
 #ifdef OUTPUT_DOTS
@@ -130,17 +131,36 @@ int main(int argc, char ** argv)
 	{
 		state_out << lattice;
 	}
+
+	/* This is the expected variance of the system in equilibrium.  It assumes
+	 * the energy requirement for a single point to move from equilibrium is 
+	 * 4J 
+	 */
+	condition = exp(-4*J/kT) * size * size;
+	/* We need this to be nonzero to ensure we terminate*/
+	if (condition==0)
+		condition = 1;
 	/* counter is just keeping track of number of steps, ending is more complex */
 	for (counter = 0;;counter ++)
 	{
-		/* This always calls lattice.step().  We will then end the loop if 
-		 * we are in automatic mode and the net spin change < 0.1*size. This
-		 * condition is a naive attempt at detecting equilibrium.*/
-		if ((lattice.step() < 0.1 * size ) && automatic)
-			break;
+		/* Step the lattice */
+		change = lattice.step();
+		if (automatic)
+		{
+			/* Our automatic mode terminates when the square of the change in 
+			 * net spin (ie variance) is less than our precomputed condition for
+			 * a given (5) number of iterations. */
+			if(change*change < condition)
+				stabilised ++;
+			else
+				stabilised = 0;
+			if (stabilised > 5)
+				break;
+		}
+		else
 		/* If we're not in automatic mode, just end after time iterations.*/
-		if ((!automatic) && (counter >= time))
-			break;
+			if (counter >= time)
+				break;
 		/* slow allows realtime viewing of the equilbriation */
 		if (slow)
 			sleep(1);
