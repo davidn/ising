@@ -38,7 +38,7 @@ void usage()
 		"  -H H             Set external Magnetic field to H.\n"\
 		"  -t time          Run each temperature run for time iterations.\n"\
 		"  -s size          Use a size by size lattice.\n"\
-		"  -d               Draw progress.\n"\
+		"  -d file.gif      Draw progress to progress.gif.\n"\
 		"  -S               Run the simulation slowly, so progression can be seen.\n"\
 		"  -h               Show this help text.\n";
 	exit(1);
@@ -48,7 +48,7 @@ int main(int argc, char ** argv)
 {
 	bool automatic=true,slow=false,do_output=false;
 	int opt, size = DEFAULT_SIZE, iterations, counter, stabilised=0, condition, change;
-	const char *state_filename="/dev/null";
+	const char *state_filename=NULL;
 	double J=DEFAULT_J, muH=DEFAULT_muH, kT=DEFAULT_kT;
 #ifdef OUTPUT_DOTS
 	fstream state_out;
@@ -77,7 +77,6 @@ int main(int argc, char ** argv)
 				exit(2);
 			}
 				break;
-				break;
 			case 'S':
 				slow = true;
 				break;
@@ -98,7 +97,7 @@ int main(int argc, char ** argv)
 				break;
 			case 'd':
 				do_output = true;
-				state_filename = "/dev/stderr";
+				state_filename = optarg;
 				break;
 			case 'h':
 			case '?':
@@ -110,7 +109,6 @@ int main(int argc, char ** argv)
 	if (do_output)
 	{
 #ifdef OUTPUT_DOTS
-		/* Open files for writing.  TODO: check for errors */
 		if (strcmp(state_filename,"-")==0)
 			state_filename = "/dev/stdout";
 		if (state_filename != NULL)

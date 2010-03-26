@@ -35,10 +35,11 @@ void usage()
 		"Simulate a 2D ferromagnet using a monte-carlo ising model.\n\n"\
 		"  -t time          Run each temperature run for time iterations.\n"\
 		"  -s size          Use a size by size lattice.\n"\
+		"  -j n             Use n processes (best set to number of CPUs)\n"\
 		"  -J J             Set interation parameter to J.\n"\
 		"  -H H             Set external Magnetic field to H.\n"\
 		"  -o output.dat    Save the data to output.dat.\n"\
-		"  -d               Draw progress.\n"\
+		"  -g graph.png     Draw a graph of magnetisation and energy to graph.png.\n"\
 		"  -1 temp          Lowest temperature to simulate.\n"\
 		"  -2 temp          Highest temperature to simulate.\n"\
 		"  -n number        Number of temperature steps to take.\n"\
@@ -52,14 +53,13 @@ int main(int argc, char ** argv)
 	int opt, num_temps=1,i=0,parallel=1;
 	vector<pid_t> children;
 	pid_t tempid;
-	const char *output_filename="ising.dat";
+	const char *output_filename="ising.dat", *graph_filename=NULL;
 	double kTfrom=DEFAULT_kT, kTto=DEFAULT_kT,kT;
 	vector<char *> parameters;
-	Gnuplot gp;
 	FILE * output;
 	parameters.push_back("");
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"t:s:J:H:o:1:2:j:n:h?")) != -1)
+	while ((opt = getopt(argc,argv,"g:t:s:J:H:o:1:2:j:n:h?")) != -1)
 	{
 		switch(opt)
 		{
@@ -124,6 +124,9 @@ int main(int argc, char ** argv)
 			case 'o':
 				output_filename = optarg;
 				break;
+			case 'g':
+				graph_filename = optarg;
+				break;
 			case 'h':
 			case '?':
 			default:
@@ -140,15 +143,10 @@ int main(int argc, char ** argv)
 		cerr << "Swapping temperatures 1 and 2." << endl;
 	}
 
-	if (strcmp(output_filename,"-")==0)
-		output_filename = "/dev/stdout";
-	if (output_filename != NULL)
+	if ((output = fopen(output_filename, "w")) == NULL)
 	{
-		if ((output = fopen(output_filename, "w")) == NULL)
-		{
-			perror("Could not open output file");
-			exit(1);
-		}
+		perror("Could not open output file");
+		exit(1);
 	}
 	
 	char command[255];
@@ -207,17 +205,21 @@ int main(int argc, char ** argv)
 		perror("Could not close ouput file (ignoring)");
 	}
 	/* Tell gnuplot to draw us a graph.*/
-	gp << \
-		"set term png size 1024,768\n"\
-		"set output 'graph.png'\n"\
-		"set xlabel 'kT/J'\n"\
-		"set ylabel 'Magnetization'\n"\
-		"set xtics rotate by -45 add ('Tc(Onsager)' 2.269)\n"\
-		"set y2label 'Energy'\n"\
-		"set ytics nomirror\n"\
-		"set y2tics\n"\
-		"plot '"<<output_filename << "' u 1:(abs($2)) t 'Magnetization',"\
-		"'"<<output_filename << "' u 1:3 t 'Energy' axes x1y2\n";
+	if (graph_filename != NULL)
+	{
+		Gnuplot gp;
+		gp << \
+			"set term png size 1024,768\n"\
+			"set output '" << graph_filename << "'\n"\
+			"set xlabel 'kT/J'\n"\
+			"set ylabel 'Magnetization'\n"\
+			"set xtics rotate by -45 add ('Tc(Onsager)' 2.269185314)\n"\
+			"set y2label 'Energy'\n"\
+			"set ytics nomirror\n"\
+			"set y2tics\n"\
+			"plot '"<<output_filename << "' u 1:(abs($2)) t 'Magnetization',"\
+			"'"<<output_filename << "' u 1:3 t 'Energy' axes x1y2\n";
+	}
 	
 	return 0;
 }
