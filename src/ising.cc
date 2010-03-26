@@ -115,7 +115,7 @@ int main(int argc, char ** argv)
 		if (state_filename != NULL)
 			state_out.open(state_filename, fstream::trunc | fstream::out);
 #elif OUTPUT_GNUPLOT
-		state_out << "set term gif animate\n"\
+		state_out << "set term gif animate" <<(slow? " delay 15" : "") << " \n"\
 			"unset key\n"\
 			"set view map\n"\
 			"set output 'progression.gif'\n"\
@@ -161,9 +161,11 @@ int main(int argc, char ** argv)
 		/* If we're not in automatic mode, just end after time iterations.*/
 			if (counter >= time)
 				break;
-		/* slow allows realtime viewing of the equilbriation */
-		if (slow)
+#ifdef OUTPUT_DOTS
+		/* slow allows realtime viewing of the equilbriation. */
+		if (slow && do_output)
 			sleep(1);
+#endif
 		/* Print the state after each iteration. */
 		if (do_output)
 		{
