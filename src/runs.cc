@@ -140,12 +140,17 @@ int main(int argc, char ** argv)
 		cerr << "Swapping temperatures 1 and 2." << endl;
 	}
 
-	/* Open files for writing.  TODO: check for errors */
 	if (strcmp(output_filename,"-")==0)
 		output_filename = "/dev/stdout";
 	if (output_filename != NULL)
-		output = fopen(output_filename, "w");
-
+	{
+		if ((output = fopen(output_filename, "w")) == NULL)
+		{
+			perror("Could not open output file");
+			exit(1);
+		}
+	}
+	
 	char command[255];
 	command[0] = '\0';
 	strncat(command,dirname(argv[0]),255);
@@ -155,7 +160,15 @@ int main(int argc, char ** argv)
 	for (kT=kTfrom; kT <= kTto; kT += (kTto-kTfrom)/num_temps)
 	{
 		if (children.size() >= parallel)
-			children.erase(find(children.begin(),children.end(),wait(NULL)));
+		{
+			tempid = wait(NULL);
+			if (tempid == -1)
+			{
+				perror("Could not wait for child");
+				exit(1);
+			}
+			children.erase(find(children.begin(),children.end(),tempid));
+		}
 		if((tempid=fork())==0)
 		{
 			freopen(output_filename,"a",stdout);
@@ -165,7 +178,12 @@ int main(int argc, char ** argv)
 			parameters.push_back(tempstr);
 			parameters.push_back(NULL);
 			execv(command,&parameters[0]);
-			perror("Running subprocess");
+			perror("Could not run subprocess");
+			exit(1);
+		}
+		if (tempid == -1)
+		{
+			perror("Could not fork()");
 			exit(1);
 		}
 		children.push_back(tempid);
@@ -176,10 +194,18 @@ int main(int argc, char ** argv)
 	}
 
 	for(vector<pid_t>::iterator it = children.begin(); it != children.end(); ++it)
-		waitpid(*it,NULL,0);
+	{
+		if(waitpid(*it,NULL,0)==-1)
+		{
+			perror("Could not collect a child (ignoring)");
+		}
+	}
 	
 	/* Close the output to ensure it is flushed for gnuplot to read. */
-	fclose(output);
+	if(fclose(output)==EOF)
+	{
+		perror("Could not close ouput file (ignoring)");
+	}
 	/* Tell gnuplot to draw us a graph.*/
 	gp << \
 		"set term png size 1024,768\n"\

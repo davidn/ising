@@ -114,7 +114,13 @@ int main(int argc, char ** argv)
 		if (strcmp(state_filename,"-")==0)
 			state_filename = "/dev/stdout";
 		if (state_filename != NULL)
+		{
 			state_out.open(state_filename, fstream::trunc | fstream::out);
+			if(!state_out)
+			{
+				cerr << "Error opening output" << endl;
+			}
+		}
 #elif OUTPUT_GNUPLOT
 		state_out << "set term gif animate" <<(slow? " delay 15" : "") << " \n"\
 			"unset key\n"\
@@ -126,7 +132,7 @@ int main(int argc, char ** argv)
 #endif
 	}
 
-	/* Lets have a different seed each time */
+	/* Lets have a different seed each time (Ignoring errors)*/
 	srand(time(NULL));
 	
 	/* Initialise a lattice object */
