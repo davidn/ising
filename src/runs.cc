@@ -21,7 +21,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <libgen.h>
-#include <errno.h>
+#include <cerrno>
 #include <vector>
 #include "../config.h"
 #include "../gnuplot-iostream/gnuplot-iostream.h"
