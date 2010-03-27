@@ -17,12 +17,14 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
 #include <cmath>
 #include <ctime>
-#include "../config.h"
 #include "lattice.h"
 #include "../gnuplot-iostream/gnuplot-iostream.h"
 

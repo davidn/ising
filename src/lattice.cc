@@ -17,10 +17,12 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
 #include <vector>
 #include <cstdlib>
 #include <cmath>
-#include "../config.h"
 #include "lattice.h"
 
 using namespace std;
