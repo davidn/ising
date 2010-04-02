@@ -1,0 +1,102 @@
+\documentclass[12pt,a4paper,english]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{ucs}
+\usepackage{babel}
+\usepackage{fancyref}
+\usepackage{relsize}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{mathpazo}
+\usepackage[
+  unicode=true,
+  pdftitle={Redesigning Part IA Practicals},
+  pdfauthor={David Newgas},
+  bookmarks=true,
+  bookmarksnumbered=false,
+  bookmarksopen=false,
+  breaklinks=false,
+  pdfborder={0 0 0},
+  backref=false,
+  colorlinks=false
+]{hyperref}
+
+\author{David Newgas}
+\title{Monte-Carlo Ising Model Simulation of a Two Dimensional Ferromagnet}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+some text
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+In materials the interplay between minimising energy and maximising entropy leads to complex behaviour, including phase transitions where a physical property of a system changes abruptly as thermodynamic variable changes.  Thermodynamic analysis of such problems is only tractable for very simply problems, to which real life situations can be approximated.
+
+The Ising model assumes an infinite lattice of points with ``spin'' pointing either up or down (taken as positive or negative for this paper).  The energy $E$ of the lattice is defined by:
+\begin{equation}
+\label{eqn:ising-energy}
+E = - \sum_{\mathrm{neighbours}\: i,j} J \sigma_i \sigma_j - \sum_i \mu H \sigma_i
+\end{equation}
+Where $\sigma_i$ is the spin of the ith lattice point, $J$ is an interaction energy and $\mu H$ is a self-energy.  In the case where $\mu$ is a magnetic moment, $H$ is an external magnetic field and $J$ is a coupling constant the Ising model represents a ferromagnet where each domain interacts only with its nearest neighbours.
+
+The Ising model can be analytically solved in one and two dimensions.  In both when $J>0$ a low temperature phase with spins aligning is seen with a transition to an unordered high temperature phase.  For the case where the model represents a ferromagnet, this low temperature phase is magnetic.  In the case where $J<0$ there is still (anti-aligned order) at low temperature and no order at high temperature.  As both are not magnetic there is no physical property in which to see a phase change.
+
+Onsager \cite{onsager44} showed that in the two dimensional case $\sinh^2 \left(2J/kT_c\right)=1$, i.e.
+\begin{equation}
+\label{eqn:T-c}
+T_c= \frac{2} {\ln \left( 1 + \sqrt{2}\right)}
+\end{equation}
+
+As no analytic solution exists in three dimensions, numerical methods for investigating the Ising model are of interest.  One such method is to directly simulate the time evolution of a finite lattice until equilibrium is reached.  The simulation requires randomness to ensure that the particular configuration reached is 
+
+\section{Method}
+\label{sec:method}
+
+\subsection{Implementation Details}
+\label{sec:implementation-details}
+
+\section{Results}
+\label{sec:results}
+
+\section{Discussion}
+\label{sec:discussion}
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+\bibliography{../../refs.bib}
+\bibliographystyle{plain}
+
+\appendix
+
+\section{Source Code}
+
+Following are files of code written for this project. Required also is the source from the gnuplot iostream interface \cite{gnuplot-iostream}.  The project is designed for use with a build infrastructure part of the submitted package, it can be build minimally with:
+\lstset{
+language=sh,
+basicstyle=\small\tt,
+tabsize=4,
+title=\lstname,
+breaklines=true,
+frame=single,
+breakatwhitespace=false,
+keywordstyle=\color[rgb]{0,0,1},
+commentstyle=\color[rgb]{0.133,0.545,0.133},
+stringstyle=\color[rgb]{0.627,0.126,0.941},
+xleftmargin=-5.75em,
+xrightmargin=-5.75em
+}
+\begin{lstlisting}
+g++ -O2 -o ising ising.cc lattice.cc ../gnuplot-iostream/gnuplot-iostream.cc -DOUTPUT_GNUPLOT -DDEFAULT_J=1 -DDEFAULT_muH=0 -DDEFAULT_kT=1 -DDEFAULT_SIZE=100 -DPACKAGE=\"ising\" -lboost_iostreams -lutil
+g++ -O2 -o runs runs.cc ../gnuplot-iostream/gnuplot-iostream.cc -DOUTPUT_GNUPLOT -DDEFAULT_J=1 -DDEFAULT_muH=0 -DDEFAULT_kT=1 -DDEFAULT_SIZE=100 -DPACKAGE=\"ising\" -lboost_iostreams -lutil
+\end{lstlisting}
+
+\lstset{language=C++}
+\lstinputlisting{src/ising.cc}
+\lstinputlisting{src/lattice.h}
+\lstinputlisting{src/lattice.cc}
+\lstinputlisting{src/runs.cc}
+\end{document}
