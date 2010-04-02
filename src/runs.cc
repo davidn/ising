@@ -59,7 +59,11 @@ int main(int argc, char ** argv)
 	double kTfrom=DEFAULT_kT, kTto=DEFAULT_kT,kT;
 	vector<char *> parameters;
 	FILE * output;
-	parameters.push_back("");
+	char command[255];
+	command[0] = '\0';
+	strncat(command,dirname(argv[0]),255);
+	strncat(command,"/ising",255);
+	parameters.push_back(command);
 	/* Read command line options. */
 	while ((opt = getopt(argc,argv,"g:t:s:J:H:o:1:2:j:n:h?")) != -1)
 	{
@@ -150,11 +154,6 @@ int main(int argc, char ** argv)
 		perror("Could not open output file");
 		exit(1);
 	}
-	
-	char command[255];
-	command[0] = '\0';
-	strncat(command,dirname(argv[0]),255);
-	strncat(command,"/ising",255);
 	
 	/* Do a run at each temperature. We detect kTfrom==kTto later*/
 	for (kT=kTfrom; kT <= kTto; kT += (kTto-kTfrom)/num_temps)
