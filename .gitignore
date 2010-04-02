@@ -1,3 +1,13 @@
+.anjuta_sym_db.db
+depcomp
+install-sh
+missing
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.pdf
 .anjuta
 .tm_project*
 .libs
