@@ -28,9 +28,9 @@
 using namespace std;
 
 /* exp lookup stores the value of exp(-d_E/kT) for each possible arrangement
- * of the current lattice point and it's neighbours.  The least significant bit
- * is the current direction of the current point (1=+ve, 0=-ve).  The other three
- * bits are the number of positive going neighbours.
+ * of the current lattice point and it's neighbours.  The least significant
+ * bit is the current direction of the current point (1=+ve, 0=-ve). The other
+ * three bits are the number of positive going neighbours.
  *
  * (i & 0x1)?1:-1 is thus the spin of the current point
  * ((i & 0xe)-4) is thus the net spin of the neigbours
@@ -64,9 +64,9 @@ int Lattice::step()
 	 * detection.*/
 	int change = 0,i,j;
 	unsigned char lookup;
-	/* Do sz*sz random points rather than all... this prevents the entire lattice
-	 * being flipped at high temperature.  Perhaps we should just do 1 point and
-	 * have Lattice.step() called more times? */
+	/* Do sz*sz random points rather than all... this prevents the entire
+     * lattice being flipped at high temperature.  Perhaps we should just do 1
+     * point and have Lattice.step() called more times? */
 	for (int num=0; num < sz*sz; num++)
 	{
 		i= rand() * sz / RAND_MAX;
@@ -134,8 +134,8 @@ void Lattice::initalise_exp_lookup()
 /* Allow easy lattice printing */
 ostream & operator<<(std::ostream &os, Lattice &lattice)
 {
-	/* OUTPUT_DOTS mode is for console viewing... it prints . and 0 depending on
-	 * spin direction.*/
+	/* OUTPUT_DOTS mode is for console viewing... it prints . and 0 depending
+     * on spin direction.*/
 #ifdef OUTPUT_DOTS
 	for(vector<vector<char> >::iterator it = lattice.begin(); it<lattice.end(); ++it)
 	{
