@@ -1,5 +1,8 @@
 #!/bin/sh
 
+SIZE="-s 15"
+STEPS="-t 20000"
+
 set -e
 echo -n Single temperature, drawing progress graph...
 ../src/ising -T 1 -d progress.gif > /dev/null
@@ -11,11 +14,11 @@ then
 fi
 
 echo -n kT=0 to kT=5J...
-../src/runs -o ising.dat -g ising.png -1 0 -2 5 -n 100 -s 50 -t 2000 $CPUS
+../src/runs -o ising.dat -g ising.png -1 0 -2 5 -n 100 $STEPS $SIZE $CPUS
 echo OK
 
 echo -n kT around kT_c...
-../src/runs -o detail.dat -1 1.8 -2 2.3 -s 50 -t 10000 -n 20 $CPUS
+../src/runs -o detail.dat -1 1.8 -2 2.3 -n 20 $STEPS $SIZE $CPUS
 echo -n plotting...
 gnuplot <<"END"
 Tc = 2.269
