@@ -315,6 +315,7 @@ int main(int argc, char ** argv)
 			"set ylabel 'Magnetization'\n"\
 			"set xtics rotate by -45 add ('Tc(Onsager)' 2.269185314)\n"\
 			"set y2label 'Energy'\n"\
+			"set y2range [-4:]\n"\
 			"set ytics nomirror\n"\
 			"set y2tics\n"\
 			"plot '"<<output_filename << "' u 1:2 t 'Magnetization'"\
