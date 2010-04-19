@@ -227,7 +227,17 @@ int main(int argc, char ** argv)
 				}
 				if (status != 0)
 				{
-					cerr << "A child was unavailable: "<<status<<endl;
+					if (WIFEXITED(status))
+						cerr << "A child exited with status " << WEXITSTATUS(status)<<endl;
+					else if (WIFSIGNALED(status))
+						cerr << "A child was killed by signal " << WTERMSIG(status)<<endl;
+					else if (WIFSTOPPED(status))
+						cerr << "A child was stopped  by signal " << WSTOPSIG(status)\
+						<< ".\n Don't do that." << endl;
+					else if (WIFCONTINUED(status))
+						cerr << "A child was continued (?)" <<endl;
+					else
+						cerr << "A child went missing with status " << status << endl;
 					exit(1);
 				}
 				vector<process>::iterator this_process = find_if(children.begin(),children.end(),is_same_process_gen(tempid));
