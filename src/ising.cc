@@ -39,10 +39,13 @@ void usage()
 		"  -J J             Set interation parameter to J.\n"\
 		"  -H H             Set external Magnetic field to H.\n"\
 		"  -t time          Run each temperature run for time iterations.\n"\
-		"  -s size          Use a size by size lattice.\n"\
-		"  -d file.gif      Draw progress to progress.gif.\n"\
-		"  -S               Run the simulation slowly, so progression can be seen.\n"\
-		"  -h               Show this help text.\n";
+		"  -s size          Use a size by size lattice.\n";
+#ifdef OUTPUT_DOTS
+		cout << "  -S               Run the simulation slowly, so progression can be seen.\n";
+#elif OUTPUT_GNUPLOT
+		cout << "  -d file.gif      Draw progress to file.gif.\n";
+#endif
+		cout << "  -h               Show this help text.\n";
 	exit(1);
 }
 
@@ -59,7 +62,7 @@ int main(int argc, char ** argv)
 	//ostream &state_out = cout;
 #endif
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"St:s:J:H:dT:h?")) != -1)
+	while ((opt = getopt(argc,argv,"St:s:J:H:d:T:h?")) != -1)
 	{
 		switch(opt)
 		{
@@ -125,7 +128,7 @@ int main(int argc, char ** argv)
 		state_out << "set term gif animate" <<(slow? " delay 15" : "") << " \n"\
 			"unset key\n"\
 			"set view map\n"\
-			"set output 'progression.gif'\n"\
+			"set output '"<<state_filename<<"'\n"\
 			"unset tics\n"\
 			"set cbtics (-1, 1)\n"\
 			"set cblabel 'Spin Direction'\n";
