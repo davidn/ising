@@ -298,7 +298,7 @@ int main(int argc, char ** argv)
 		}
 		output << it->kT << ' ' << sum_M/num_reps << ' ' << sum_E/num_reps << ' ' << it->steps \
 			<< ' ' << (it == records.begin() ? 0.0 : sum_dE/(num_reps*(it->kT-(it-num_reps)->kT))) \
-			<< ' ' << ((ss_E-sum_E*sum_E)/(num_reps-1.0))/(it->kT * it->kT) << endl;
+			<< ' ' << (ss_E-sum_E*sum_E/num_reps)/((num_reps-1.0)* it->kT * it->kT) << endl;
 	}
 	
 	/* Close the output to ensure it is flushed for gnuplot to read. */
