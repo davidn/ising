@@ -202,6 +202,12 @@ int main(int argc, char ** argv)
 		cerr << "Swapping temperatures 1 and 2." << endl;
 	}
 
+	if (num_reps < 2 && f)
+	{
+		cerr << "Must have 2 repetitions for fluctuation calcualations." << endl;
+		exit(2);
+	}
+
 	output.open(output_filename);
 	
 	/* Do a run at each temperature. We detect kTfrom==kTto later*/
