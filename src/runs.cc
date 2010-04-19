@@ -295,20 +295,21 @@ int main(int argc, char ** argv)
 	if (parallel > 1)
 		sort(records.begin(),records.end(),record_cmp);
 	/* Print out output */
+	double prev_sum_E = 0;
 	for(vector<record>::iterator it = records.begin(); it != records.end();it+=num_reps)
 	{
-		double sum_E=0, sum_M=0, sum_dE, ss_E=0, ss_M=0;
+		double sum_E=0, sum_M=0, sum_dE=0, ss_E=0, ss_M=0;
 		for(vector<record>::iterator pos = it; pos != it+num_reps; ++pos)
 		{
 			sum_E += pos->E;
-			sum_dE += pos->E - (pos-num_reps)->E;
 			sum_M += fabs(pos->M);
 			ss_E += pos->E * pos->E;
 //			ss_M += pos->M * pos->M;
 		}
 		output << it->kT << ' ' << sum_M/num_reps << ' ' << sum_E/num_reps << ' ' << it->steps \
-			<< ' ' << (it == records.begin() ? 0.0 : sum_dE/(num_reps*(it->kT-(it-num_reps)->kT))) \
+			<< ' ' << (it == records.begin() ? 0.0 : (sum_E-prev_sum_E)/(num_reps*(it->kT-(it-num_reps)->kT))) \
 			<< ' ' << (ss_E-sum_E*sum_E/num_reps)/((num_reps-1.0)* it->kT * it->kT) << endl;
+		prev_sum_E = sum_E;
 	}
 	
 	/* Close the output to ensure it is flushed for gnuplot to read. */
