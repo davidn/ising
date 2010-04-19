@@ -25,6 +25,7 @@
 #include <sys/wait.h>
 #include <libgen.h>
 #include <cerrno>
+#include <cmath>
 #include <vector>
 #include "../gnuplot-iostream/gnuplot-iostream.h"
 
@@ -290,7 +291,7 @@ int main(int argc, char ** argv)
 		for(vector<record>::iterator pos = it; pos != it+num_reps; ++pos)
 		{
 			sum_E += pos->E;
-			sum_M += pos->M;
+			sum_M += fabs(pos->M);
 			ss_E += pos->E * pos->E;
 //			ss_M += pos->M * pos->M;
 		}
@@ -315,7 +316,7 @@ int main(int argc, char ** argv)
 			"set y2label 'Energy'\n"\
 			"set ytics nomirror\n"\
 			"set y2tics\n"\
-			"plot '"<<output_filename << "' u 1:(abs($2)) t 'Magnetization'"\
+			"plot '"<<output_filename << "' u 1:2 t 'Magnetization'"\
 			",'"<<output_filename << "' u 1:3 t 'Energy' axes x1y2";
 		if(d)
 			gp << ",'"<<output_filename << "' u 1:5 t 'C(discrete)' axes x1y2";
