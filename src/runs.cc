@@ -30,10 +30,12 @@
 
 using namespace std;
 
+static const char* progname;
+
 /* Print some documentation. */
 void usage()
 {
-	cout << "Usage: " PACKAGE " [options]\n"\
+	cout << "Usage: " <<progname<< " [options]\n"\
 		"Simulate a 2D ferromagnet using a monte-carlo ising model.\n\n"\
 		"  -t time          Run each temperature run for time iterations.\n"\
 		"  -s size          Use a size by size lattice.\n"\
