@@ -85,7 +85,7 @@ void usage()
 
 int main(int argc, char ** argv)
 {
-	int opt, num_temps=1,num_reps=1,i=0,parallel=1;
+	int opt, num_temps=1,num_reps=1,i=0,parallel=1,status=0;
 	bool d=false,f=false;
 	vector<process> children;
 	vector<record> records;
@@ -212,10 +212,15 @@ int main(int argc, char ** argv)
 		{
 			if (children.size() >= parallel)
 			{
-				tempid = wait(NULL);
+				tempid = wait(&status);
 				if (tempid == -1)
 				{
 					perror("Could not wait for child");
+					exit(1);
+				}
+				if (status != 0)
+				{
+					cerr << "A child was unavailable: "<<status<<endl;
 					exit(1);
 				}
 				vector<process>::iterator this_process = find_if(children.begin(),children.end(),is_same_process_gen(tempid));

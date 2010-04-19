@@ -69,8 +69,11 @@ int Lattice::step()
      * point and have Lattice.step() called more times? */
 	for (int num=0; num < sz*sz; num++)
 	{
-		i= rand() * sz / RAND_MAX;
-		j= rand() * sz / RAND_MAX;
+		/* We only need 1 call to rand() if sz < 2^15 which is probably safe to
+		   assume as a 32768x32768 grid would take a LONG time to run through */
+		int rand_bits = rand(); //31 bits of randomness
+		i= (rand_bits & 0x7FFF) * sz / 0x8000; // lowest 15 bits
+		j= (rand_bits>>15 & 0x7FFF) * sz / 0x8000; //next 15 bits
 		lookup = (*this)[(i+1)%sz][j]
 			+(*this)[(i-1)%sz][j]
 			+(*this)[i][(j+1)%sz]
