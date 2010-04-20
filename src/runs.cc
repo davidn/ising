@@ -74,8 +74,8 @@ void usage()
 		"  -H H             Set external Magnetic field to H.\n"\
 		"  -o output.dat    Save the data to output.dat.\n"\
 		"  -g graph.png     Draw a graph of magnetisation and energy to graph.png.\n"\
-		"  -d               Inlcude plot of discrete C estimate\n"\
-		"  -f               Include plot of C estimate from fluctuations\n"\
+		"  -d graph.png     Plot a discrete heat capacity estimate to graph.png\n"\
+		"  -f graph.png     Plot a estimate of heat capacity from fluctuations to graph.png\n"\
 		"  -1 temp          Lowest temperature to simulate.\n"\
 		"  -2 temp          Highest temperature to simulate.\n"\
 		"  -n number        Number of temperature steps to take.\n"\
@@ -91,7 +91,7 @@ int main(int argc, char ** argv)
 	vector<record> records;
 	record next_record;
 	pid_t tempid;
-	const char *output_filename="ising.dat", *graph_filename=NULL;
+	const char *output_filename="ising.dat", *heat_filename = NULL, *graph_filename=NULL;
 	double kTfrom=DEFAULT_kT, kTto=DEFAULT_kT,kT;
 	vector<char *> parameters;
 	ofstream output;
@@ -102,7 +102,7 @@ int main(int argc, char ** argv)
 	strncat(command,"/ising",255);
 	parameters.push_back(command);
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"g:dft:s:J:H:o:1:2:j:n:h?")) != -1)
+	while ((opt = getopt(argc,argv,"g:d:f:t:s:J:H:o:1:2:j:n:h?")) != -1)
 	{
 		switch(opt)
 		{
@@ -172,9 +172,11 @@ int main(int argc, char ** argv)
 				graph_filename = optarg;
 				break;
 			case 'd':
+				heat_filename = optarg;
 				d = true;
 				break;
 			case 'f':
+				heat_filename = optarg;
 				f = true;
 				break;
 			case 'h':
@@ -301,12 +303,26 @@ int main(int argc, char ** argv)
 			"set ytics nomirror\n"\
 			"set y2tics\n"\
 			"plot '"<<output_filename << "' u 1:2 t 'Magnetization'"\
-			",'"<<output_filename << "' u 1:3 t 'Energy' axes x1y2";
-		if(d)
-			gp << ",'"<<output_filename << "' u 1:5 t 'C(discrete)' axes x1y2";
-		if(f)
-			gp << ",'"<<output_filename << "' u 1:6 t 'C(fluctuations)' axes x1y2";
-		gp << "\n";
+			",'"<<output_filename << "' u 1:3 t 'Energy' axes x1y2\n";
+		if(d || f)
+		{
+			gp << \
+			"set term png size 1024,768\n"\
+			"set output '" << heat_filename << "'\n"\
+			"set xlabel 'kT/J'\n"\
+			"set ylabel 'Energy'\n"\
+			"set xtics rotate by -45 add ('Tc(Onsager)' 2.269185314)\n"\
+			"set y2label 'Heat Capacity'\n"\
+			"set ytics nomirror\n"\
+			"set y2range [0:]\n"\
+			"set y2tics\n"\
+			"plot '"<<output_filename << "' u 1:3 t 'Energy'";
+			if(d)
+				gp << ",'"<<output_filename << "' u 1:5 t 'C(discrete)' axes x1y2";
+			if(f)
+				gp << ",'"<<output_filename << "' u 1:6 t 'C(fluctuations)' axes x1y2";
+			gp << "\n";
+		}
 	}
 	
 	return 0;
