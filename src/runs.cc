@@ -33,15 +33,16 @@ using namespace std;
 
 static const char* progname;
 
-typedef struct {
+typedef struct _process {
 	pid_t pid;
 	int pipefd[2];
 } process;
 
-typedef struct {
+typedef struct _record {
 	double kT;
 	double M;
 	double E;
+	double variance;
 	int steps;
 } record;
 
@@ -78,14 +79,13 @@ void usage()
 		"  -1 temp          Lowest temperature to simulate.\n"\
 		"  -2 temp          Highest temperature to simulate.\n"\
 		"  -n number        Number of temperature steps to take.\n"\
-		"  -r number        Number of times to repeat each temperature (needed for flucuations)\n"\
 		"  -h               Show this help text.\n";
 	exit(1);
 }
 
 int main(int argc, char ** argv)
 {
-	int opt, num_temps=1,num_reps=1,i=0,parallel=1,status=0;
+	int opt, num_temps=1,parallel=1,status=0;
 	bool d=false,f=false;
 	vector<process> children;
 	vector<record> records;
@@ -102,7 +102,7 @@ int main(int argc, char ** argv)
 	strncat(command,"/ising",255);
 	parameters.push_back(command);
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"g:dft:s:J:H:o:1:2:j:n:r:h?")) != -1)
+	while ((opt = getopt(argc,argv,"g:dft:s:J:H:o:1:2:j:n:h?")) != -1)
 	{
 		switch(opt)
 		{
@@ -122,16 +122,7 @@ int main(int argc, char ** argv)
 					cout << "Must have at least 1 temperature!" << endl;
 					exit(2);
 				}
-				records.reserve(num_temps*num_reps);
-				break;
-			case 'r':
-				num_reps = atoi(optarg);
-				if (num_reps < 1)
-				{
-					cout << "Must have at least 1 repetition!" << endl;
-					exit(2);
-				}
-				records.reserve(num_temps*num_reps);
+				records.reserve(num_temps);
 				break;
 			case 'j':
 				parallel = atoi(optarg);
@@ -202,76 +193,67 @@ int main(int argc, char ** argv)
 		cerr << "Swapping temperatures 1 and 2." << endl;
 	}
 
-	if (num_reps < 2 && f)
-	{
-		cerr << "Must have 2 repetitions for fluctuation calcualations." << endl;
-		exit(2);
-	}
-
 	output.open(output_filename);
-	
+
 	/* Do a run at each temperature. We detect kTfrom==kTto later*/
 	for (kT=kTfrom; kT <= kTto; kT += (kTto-kTfrom)/num_temps)
 	{
-		/* repeat num_reps times */
-		for (int i = 0; i < num_reps; i++)
+		if (children.size() >= parallel)
 		{
-			if (children.size() >= parallel)
-			{
-				tempid = wait(&status);
-				if (tempid == -1)
-				{
-					perror("Could not wait for child");
-					exit(1);
-				}
-				if (status != 0)
-				{
-					if (WIFEXITED(status))
-						cerr << "A child exited with status " << WEXITSTATUS(status)<<endl;
-					else if (WIFSIGNALED(status))
-						cerr << "A child was killed by signal " << WTERMSIG(status)<<endl;
-					else if (WIFSTOPPED(status))
-						cerr << "A child was stopped  by signal " << WSTOPSIG(status)\
-						<< ".\n Don't do that." << endl;
-					else if (WIFCONTINUED(status))
-						cerr << "A child was continued (?)" <<endl;
-					else
-						cerr << "A child went missing with status " << status << endl;
-					exit(1);
-				}
-				vector<process>::iterator this_process = find_if(children.begin(),children.end(),is_same_process_gen(tempid));
-				fscanf(fdopen(this_process->pipefd[0],"r"),"%lf %lf %lf %d\n",&next_record.kT, &next_record.M, &next_record.E, &next_record.steps);
-				records.push_back(next_record);
-				close(this_process->pipefd[0]);
-				children.erase(this_process);
-			}
-
-			process new_process;
-			pipe(new_process.pipefd);
-			if((tempid=fork())==0)
-			{
-
-				dup2(new_process.pipefd[1],STDOUT_FILENO);
-				close(new_process.pipefd[0]);
-				close(new_process.pipefd[1]);
-				char tempstr[31];
-				sprintf(tempstr,"%.15E",kT);
-				parameters.push_back("-T");
-				parameters.push_back(tempstr);
-				parameters.push_back(NULL);
-				execv(command,&parameters[0]);
-				perror("Could not run subprocess");
-				exit(1);
-			}
+			tempid = wait(&status);
 			if (tempid == -1)
 			{
-				perror("Could not fork()");
+				perror("Could not wait for child");
 				exit(1);
 			}
-			close(new_process.pipefd[1]);
-			new_process.pid = tempid;
-			children.push_back(new_process);
+			if (status != 0)
+			{
+				if (WIFEXITED(status))
+					cerr << "A child exited with status " << WEXITSTATUS(status)<<endl;
+				else if (WIFSIGNALED(status))
+					cerr << "A child was killed by signal " << WTERMSIG(status)<<endl;
+				else if (WIFSTOPPED(status))
+					cerr << "A child was stopped  by signal " << WSTOPSIG(status)\
+					<< ".\n Don't do that." << endl;
+				else if (WIFCONTINUED(status))
+					cerr << "A child was continued (?)" <<endl;
+				else
+					cerr << "A child went missing with status " << status << endl;
+				exit(1);
+			}
+			vector<process>::iterator this_process = find_if(children.begin(),children.end(),is_same_process_gen(tempid));
+			fscanf(fdopen(this_process->pipefd[0],"r"),"%lf %lf %lf %lf %d\n",&next_record.kT, &next_record.M, &next_record.E, &next_record.variance, &next_record.steps);
+			records.push_back(next_record);
+			close(this_process->pipefd[0]);
+			children.erase(this_process);
 		}
+
+		process new_process;
+		pipe(new_process.pipefd);
+		if((tempid=fork())==0)
+		{
+
+			dup2(new_process.pipefd[1],STDOUT_FILENO);
+			close(new_process.pipefd[0]);
+			close(new_process.pipefd[1]);
+			char tempstr[31];
+			sprintf(tempstr,"%.15E",kT);
+			parameters.push_back("-T");
+			parameters.push_back(tempstr);
+			parameters.push_back(NULL);
+			execv(command,&parameters[0]);
+			perror("Could not run subprocess");
+			exit(1);
+		}
+		if (tempid == -1)
+		{
+			perror("Could not fork()");
+			exit(1);
+		}
+		close(new_process.pipefd[1]);
+		new_process.pid = tempid;
+		children.push_back(new_process);
+		
 		/* if kTto==kTfrom the kT increment is zero, and we therefore must only
 		 * do one run, so break in this case. */
 		if (kTto == kTfrom)
@@ -294,21 +276,11 @@ int main(int argc, char ** argv)
 	if (parallel > 1)
 		sort(records.begin(),records.end(),record_cmp);
 	/* Print out output */
-	double prev_sum_E = 0;
-	for(vector<record>::iterator it = records.begin(); it != records.end();it+=num_reps)
+	for(vector<record>::iterator it = records.begin(); it != records.end();++it)
 	{
-		double sum_E=0, sum_M=0, sum_dE=0, ss_E=0, ss_M=0;
-		for(vector<record>::iterator pos = it; pos != it+num_reps; ++pos)
-		{
-			sum_E += pos->E;
-			sum_M += fabs(pos->M);
-			ss_E += pos->E * pos->E;
-//			ss_M += pos->M * pos->M;
-		}
-		output << it->kT << ' ' << sum_M/num_reps << ' ' << sum_E/num_reps << ' ' << it->steps \
-			<< ' ' << (it == records.begin() ? 0.0 : (sum_E-prev_sum_E)/(num_reps*(it->kT-(it-num_reps)->kT))) \
-			<< ' ' << (ss_E-sum_E*sum_E/num_reps)/((num_reps-1.0)* it->kT * it->kT) << endl;
-		prev_sum_E = sum_E;
+		output << it->kT << ' ' << it->M << ' ' << it->E << ' ' << it->steps \
+			<< ' ' << (it == records.begin() ? 0.0 : (it->E-(it-1)->E)/((it->kT-(it-1)->kT))) \
+			<< ' ' << it->variance << endl;
 	}
 	
 	/* Close the output to ensure it is flushed for gnuplot to read. */

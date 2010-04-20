@@ -39,7 +39,8 @@ void usage()
 		"  -J J             Set interation parameter to J.\n"\
 		"  -H H             Set external Magnetic field to H.\n"\
 		"  -t time          Run each temperature run for time iterations.\n"\
-		"  -s size          Use a size by size lattice.\n";
+		"  -s size          Use a size by size lattice.\n"\
+		"  -a n             Calculate variances over last n iterations.\n";
 #ifdef OUTPUT_DOTS
 		cout << "  -S               Run the simulation slowly, so progression can be seen.\n";
 #elif OUTPUT_GNUPLOT
@@ -52,9 +53,10 @@ void usage()
 int main(int argc, char ** argv)
 {
 	bool automatic=true,slow=false,do_output=false;
-	int opt, size = DEFAULT_SIZE, iterations, counter, stabilised=0, condition, change;
+	int opt, size = DEFAULT_SIZE, iterations, counter, stabilised=0, condition, change, num_energies=100;
 	const char *state_filename=NULL;
 	double J=DEFAULT_J, muH=DEFAULT_muH, kT=DEFAULT_kT;
+	vector<double> energy_store;
 #ifdef OUTPUT_DOTS
 	fstream state_out;
 #elif OUTPUT_GNUPLOT
@@ -62,10 +64,18 @@ int main(int argc, char ** argv)
 	//ostream &state_out = cout;
 #endif
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"St:s:J:H:d:T:h?")) != -1)
+	while ((opt = getopt(argc,argv,"a:St:s:J:H:d:T:h?")) != -1)
 	{
 		switch(opt)
 		{
+			case 'a':
+				num_energies = atoi(optarg);
+				if (num_energies < 2)
+				{
+					cout << "Need to calculate variance over at least 2 iterations" << endl;
+					exit(2);
+				}
+				break;
 			case 's':
 				size = atoi(optarg);
 				if (size < 1)
@@ -111,6 +121,7 @@ int main(int argc, char ** argv)
 		}
 	}
 
+	energy_store.resize(num_energies);
 	if (do_output)
 	{
 #ifdef OUTPUT_DOTS
@@ -165,6 +176,7 @@ int main(int argc, char ** argv)
 	{
 		/* Step the lattice */
 		change = lattice.step();
+		energy_store[counter%num_energies]=lattice.E();
 		if (automatic)
 		{
 			/* Our automatic mode terminates when the square of the change in 
@@ -196,6 +208,16 @@ int main(int argc, char ** argv)
 #endif
 		}
 	}
-	cout << kT/J << ' ' << lattice.M() << ' ' << lattice.E() << ' ' << counter << endl;
+	double mean=0,variance=0;
+	num_energies = num_energies < counter? num_energies:counter;
+	for (int i=0; i<num_energies;i++)
+	{
+		mean += energy_store[i];
+		variance += energy_store[i] * energy_store[i];
+	}
+	mean /=num_energies;
+	variance = (variance - mean*mean*num_energies)/(num_energies-1);
+	cout << kT/J << ' ' << lattice.M() << ' ' << lattice.E() << ' ' << variance\
+		<< ' ' << counter << endl;
 	return 0;
 }
