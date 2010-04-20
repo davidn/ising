@@ -24,7 +24,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <cmath>
-#include <ctime>
+#include <sys/time.h>
 #include "lattice.h"
 #include "../gnuplot-iostream/gnuplot-iostream.h"
 
@@ -136,7 +136,13 @@ int main(int argc, char ** argv)
 	}
 
 	/* Lets have a different seed each time (Ignoring errors)*/
-	srand(time(NULL));
+	struct timeval tv;
+	if (gettimeofday(&tv,NULL)==-1)
+	{
+		perror("Could not get time to seed RNG (continuing)");
+	}
+	else
+		srand(tv.tv_sec ^ tv.tv_usec);
 	
 	/* Initialise a lattice object */
 	Lattice lattice = Lattice(size,J,muH,kT);
