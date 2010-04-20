@@ -79,18 +79,18 @@ int main(int argc, char ** argv)
 			case 's':
 				size = atoi(optarg);
 				if (size < 1)
-			{
-				cout << "Lattice too small!" << endl;
-				exit(2);
-			}
+				{
+					cout << "Lattice too small!" << endl;
+					exit(2);
+				}
 				break;
 			case 'T':
 				kT= atof(optarg);
 				if (kT < 0)
-			{
-				cout << "Temperature below 0 is meaningless!" << endl;
-				exit(2);
-			}
+				{
+					cout << "Temperature below 0 is meaningless!" << endl;
+					exit(2);
+				}
 				break;
 			case 'S':
 				slow = true;
@@ -99,10 +99,10 @@ int main(int argc, char ** argv)
 				automatic = false;  // If a time is specfied don't do auto end detection
 				iterations = atoi(optarg);
 				if (iterations < 1)
-			{
-				cout << "Must have at least 1 step!" << endl;
-				exit(2);
-			}
+				{
+					cout << "Must have at least 1 step!" << endl;
+					exit(2);
+				}
 				break;
 			case 'J':
 				J = atof(optarg);
