@@ -79,6 +79,7 @@ void usage()
 		"  -1 temp          Lowest temperature to simulate.\n"\
 		"  -2 temp          Highest temperature to simulate.\n"\
 		"  -n number        Number of temperature steps to take.\n"\
+		"  -p               Plot only (reuse data)\n"\
 		"  -h               Show this help text.\n";
 	exit(1);
 }
@@ -86,7 +87,7 @@ void usage()
 int main(int argc, char ** argv)
 {
 	int opt, num_temps=1,parallel=1,status=0;
-	bool d=false,f=false;
+	bool d=false,f=false,p=false;
 	vector<process> children;
 	vector<record> records;
 	record next_record;
@@ -102,7 +103,7 @@ int main(int argc, char ** argv)
 	strncat(command,"/ising",255);
 	parameters.push_back(command);
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"g:d:f:t:s:J:H:o:1:2:j:n:h?")) != -1)
+	while ((opt = getopt(argc,argv,"g:d:f:t:s:J:H:o:p1:2:j:n:h?")) != -1)
 	{
 		switch(opt)
 		{
@@ -179,12 +180,18 @@ int main(int argc, char ** argv)
 				heat_filename = optarg;
 				f = true;
 				break;
+			case 'p':
+				p = true;
+				break;
 			case 'h':
 			case '?':
 			default:
 				usage();
 		}
 	}
+
+	if (p)
+		goto plot;
 	
 	/* We need from and to in the right order or later a loop will go on forever */
 	if (kTfrom>kTto)
@@ -287,7 +294,8 @@ int main(int argc, char ** argv)
 	
 	/* Close the output to ensure it is flushed for gnuplot to read. */
 	output.close();
-	
+
+plot:
 	/* Tell gnuplot to draw us a graph.*/
 	if (graph_filename != NULL)
 	{
