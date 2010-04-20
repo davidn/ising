@@ -79,7 +79,6 @@ void usage()
 		"  -2 temp          Highest temperature to simulate.\n"\
 		"  -n number        Number of temperature steps to take.\n"\
 		"  -r number        Number of times to repeat each temperature (needed for flucuations)\n"\
-		"  -V               Be verbose.\n"\
 		"  -h               Show this help text.\n";
 	exit(1);
 }
