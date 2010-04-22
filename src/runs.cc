@@ -83,6 +83,7 @@ void usage()
 		"  -2 temp          Highest temperature to simulate.\n"\
 		"  -n number        Number of temperature steps to take.\n"\
 		"  -p               Plot only (reuse data)\n"\
+		"  -P               Plot pdf (default png)\n"\
 		"  -h               Show this help text.\n";
 	exit(1);
 }
@@ -90,7 +91,7 @@ void usage()
 int main(int argc, char ** argv)
 {
 	int opt, num_temps=1,parallel=1,status=0;
-	bool d=false,f=false,p=false;
+	bool d=false,f=false,p=false,pdf=false;
 	vector<process> children;
 	vector<record> records;
 	record next_record;
@@ -106,7 +107,7 @@ int main(int argc, char ** argv)
 	strncat(command,"/ising",255);
 	parameters.push_back(command);
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"a:g:d:f:t:s:J:H:o:p1:2:j:n:h?")) != -1)
+	while ((opt = getopt(argc,argv,"a:g:d:f:t:s:J:H:o:pP1:2:j:n:h?")) != -1)
 	{
 		switch(opt)
 		{
@@ -194,6 +195,9 @@ int main(int argc, char ** argv)
 				break;
 			case 'p':
 				p = true;
+				break;
+			case 'P':
+				pdf = true;
 				break;
 			case 'h':
 			case '?':
@@ -325,7 +329,7 @@ plot:
 	{
 		Gnuplot gp;
 		gp << \
-			"set term png size 1024,768\n"\
+			"set term " << (pdf?"pdf\n":"png size 1024,768\n") << \
 			"set output '" << graph_filename << "'\n"\
 			"set xlabel 'kT/J'\n"\
 			"set ylabel 'Magnetization'\n"\
@@ -344,7 +348,7 @@ plot:
 	{
 		Gnuplot gp;
 		gp << \
-			"set term png size 1024,768\n"\
+			"set term " << (pdf?"pdf\n":"png size 1024,768\n") << \
 			"set output '" << heat_filename << "'\n"\
 			"set xlabel 'kT/J'\n"\
 			"set ylabel 'Energy per lattice point/J'\n"\
