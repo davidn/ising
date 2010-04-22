@@ -159,5 +159,7 @@ ostream & operator<<(std::ostream &os, Lattice &lattice)
 	}
 	os << "e\ne\n";
 #endif
+		
+	return os;
 }
 
