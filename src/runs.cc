@@ -41,8 +41,10 @@ typedef struct _process {
 typedef struct _record {
 	double kT;
 	double M;
+	double M_err;
 	double E;
-	double variance;
+	double E_err;
+	double variance; /*of individual lattice point energy*/
 	int steps;
 } record;
 
@@ -230,8 +232,13 @@ int main(int argc, char ** argv)
 					cerr << "A child went missing with status " << status << endl;
 				exit(1);
 			}
-			vector<process>::iterator this_process = find_if(children.begin(),children.end(),is_same_process_gen(tempid));
-			fscanf(fdopen(this_process->pipefd[0],"r"),"%lf %lf %lf %lf %d\n",&next_record.kT, &next_record.M, &next_record.E, &next_record.variance, &next_record.steps);
+			vector<process>::iterator this_process = find_if(children.begin(),
+			                        children.end(),is_same_process_gen(tempid));
+			fscanf(fdopen(this_process->pipefd[0],"r"),
+			       "%lf %lf %lf %lf %lf %lf %d\n",
+			       &next_record.kT, &next_record.M, &next_record.M_err,
+			       &next_record.E, &next_record.E_err, &next_record.variance,
+			       &next_record.steps);
 			records.push_back(next_record);
 			close(this_process->pipefd[0]);
 			children.erase(this_process);
@@ -275,7 +282,11 @@ int main(int argc, char ** argv)
 		{
 			perror("Could not collect a child (ignoring)");
 		}
-		fscanf(fdopen(it->pipefd[0],"r"),"%lf %lf %lf %d\n",&next_record.kT, &next_record.M, &next_record.E, &next_record.steps);
+		fscanf(fdopen(it->pipefd[0],"r"),
+		       "%lf %lf %lf %lf %lf %lf %d\n",
+		       &next_record.kT, &next_record.M, &next_record.M_err,
+		       &next_record.E, &next_record.E_err, &next_record.variance,
+		       &next_record.steps);
 		records.push_back(next_record);
 		close(it->pipefd[0]);
 		close(it->pipefd[1]);
@@ -287,9 +298,12 @@ int main(int argc, char ** argv)
 	/* Print out output */
 	for(vector<record>::iterator it = records.begin(); it != records.end();++it)
 	{
-		output << it->kT << ' ' << it->M << ' ' << it->E << ' ' << it->steps \
-			<< ' ' << (it == records.begin() ? 0.0 : (it->E-(it-1)->E)/((it->kT-(it-1)->kT))) \
-			<< ' ' << it->variance << endl;
+		output << it->kT << ' ' << fabs(it->M) << ' ' << it->M_err \
+			<< ' ' << it->E << ' ' << it->E_err \
+			<< ' ' << (it == records.begin() ? 0.0 : \
+				           (it->E-(it-1)->E)/(it->kT-(it-1)->kT)) \
+			<< ' ' << it->variance/(it->kT*it->kT)\
+			<< ' ' << it->steps << endl;
 	}
 	
 	/* Close the output to ensure it is flushed for gnuplot to read. */
@@ -311,11 +325,15 @@ plot:
 			"set y2range [-2:0]\n"\
 			"set ytics nomirror\n"\
 			"set y2tics\n"\
-			"plot '"<<output_filename << "' u 1:2 t 'Magnetization'"\
-			",'"<<output_filename << "' u 1:3 t 'Energy' axes x1y2\n";
-		if(d || f)
-		{
-			gp << \
+			"plot '"<<output_filename \
+			<< "' u 1:2:3 w yerrorbars t 'Magnetization'"\
+			",'"<<output_filename << \
+			"' u 1:4:5 w yerrorbars t 'Energy' axes x1y2\n";
+	}
+	if(d || f)
+	{
+		Gnuplot gp;
+		gp << \
 			"set term png size 1024,768\n"\
 			"set output '" << heat_filename << "'\n"\
 			"set xlabel 'kT/J'\n"\
@@ -326,13 +344,14 @@ plot:
 			"set yrange [-2:0]\n"\
 			"set y2range [0:]\n"\
 			"set y2tics\n"\
-			"plot '"<<output_filename << "' u 1:3 t 'Energy'";
-			if(d)
-				gp << ",'"<<output_filename << "' u 1:5 t 'C(discrete)' axes x1y2";
-			if(f)
-				gp << ",'"<<output_filename << "' u 1:6 t 'C(fluctuations)' axes x1y2";
-			gp << "\n";
-		}
+			"plot '"<<output_filename << "' u 1:4:5 w yerrorbars t 'Energy'";
+		if(d)
+			gp << ",'"<<output_filename << \
+			"' u 1:6 t 'Heat capacity (discrete)' axes x1y2";
+		if(f)
+			gp << ",'"<<output_filename << \
+			"' u 1:7 t 'Heat capacity (fluctuations)' axes x1y2";
+		gp << "\n";
 	}
 
 	return 0;

@@ -53,10 +53,11 @@ void usage()
 int main(int argc, char ** argv)
 {
 	bool automatic=true,slow=false,do_output=false;
-	int opt, size = DEFAULT_SIZE, iterations, counter, stabilised=0, condition, change, num_energies=100;
+	int opt, size = DEFAULT_SIZE, iterations, counter, stabilised=0, condition, change, num_vals=100;
 	const char *state_filename=NULL;
 	double J=DEFAULT_J, muH=DEFAULT_muH, kT=DEFAULT_kT;
-	vector<double> energy_store;
+	vector<double> E_store;
+	vector<double> M_store;
 #ifdef OUTPUT_DOTS
 	fstream state_out;
 #elif OUTPUT_GNUPLOT
@@ -69,10 +70,10 @@ int main(int argc, char ** argv)
 		switch(opt)
 		{
 			case 'a':
-				num_energies = atoi(optarg);
-				if (num_energies < 2)
+				num_vals = atoi(optarg);
+				if (num_vals < 2)
 				{
-					cout << "Need to calculate variance over at least 2 iterations" << endl;
+					cout << "Need to calculate averages over at least 2 iterations" << endl;
 					exit(2);
 				}
 				break;
@@ -120,8 +121,10 @@ int main(int argc, char ** argv)
 				usage();
 		}
 	}
-
-	energy_store.resize(num_energies);
+	
+	E_store.resize(num_vals);
+	M_store.resize(num_vals);
+	
 	if (do_output)
 	{
 #ifdef OUTPUT_DOTS
@@ -176,7 +179,8 @@ int main(int argc, char ** argv)
 	{
 		/* Step the lattice */
 		change = lattice.step();
-		energy_store[counter%num_energies]=lattice.E();
+		E_store[counter%num_vals]=lattice.E();
+		M_store[counter%num_vals]=lattice.M();
 		if (automatic)
 		{
 			/* Our automatic mode terminates when the square of the change in 
@@ -208,16 +212,23 @@ int main(int argc, char ** argv)
 #endif
 		}
 	}
-	double mean=0,variance=0;
-	num_energies = num_energies < counter? num_energies:counter;
-	for (int i=0; i<num_energies;i++)
+	double Emean=0,Evariance=0;
+	double Mmean=0,Mvariance=0;
+	num_vals = num_vals < counter? num_vals:counter;
+	for (int i=0; i<num_vals;i++)
 	{
-		mean += energy_store[i];
-		variance += energy_store[i] * energy_store[i];
+		Emean += E_store[i];
+		Evariance += E_store[i] * E_store[i];
+		Mmean += M_store[i];
+		Mvariance += M_store[i] * M_store[i];
 	}
-	mean /=num_energies;
-	variance = (variance - mean*mean*num_energies)/(num_energies-1);
-	cout << kT/J << ' ' << lattice.M() << ' ' << lattice.E() << ' ' << variance\
+	Emean /=num_vals;
+	Evariance = (Evariance - Emean*Emean*num_vals)/(num_vals-1);
+	Mmean /=num_vals;
+	Mvariance = (Mvariance - Mmean*Mmean*num_vals)/(num_vals-1);
+	cout << kT/J << ' ' << Mmean << ' ' << sqrt(Mvariance/num_vals) \
+		<< ' ' << Emean << ' ' << sqrt(Evariance/num_vals) \
+		<< ' ' << Evariance*size*size /*variance of individual point's energy*/\
 		<< ' ' << counter << endl;
 	return 0;
 }
