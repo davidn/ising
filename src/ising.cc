@@ -145,6 +145,7 @@ int main(int argc, char ** argv)
 			"set output '"<<state_filename<<"'\n"\
 			"unset tics\n"\
 			"set cbtics (-1, 1)\n"\
+			"set cbrange [-1:1]\n"\
 			"set cblabel 'Spin Direction'\n";
 #endif
 	}
