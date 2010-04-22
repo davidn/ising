@@ -1,7 +1,8 @@
 #!/bin/sh
 
-SIZE="-s 15"
+SIZE="-s 20"
 STEPS="-t 20000"
+AVE="-a 1000"
 
 set -e
 echo -n Single temperature, drawing progress graph...
@@ -14,24 +15,24 @@ then
 fi
 
 echo -n kT=0 to kT=5J...
-../src/runs -o ising.dat -g ising.png -1 0 -2 5 -n 100 $STEPS $SIZE $CPUS
+../src/runs -o ising.dat -g ising.png -f heat.png -d heat.png -1 0 -2 4 -n 50 $AVE $STEPS $SIZE $CPUS
 echo OK
 
 echo -n kT around kT_c...
-../src/runs -o detail.dat -1 1.8 -2 2.3 -n 20 $STEPS $SIZE $CPUS
-echo -n plotting...
-gnuplot <<"END"
-Tc = 2.269
+../src/runs -o detail.dat -1 2 -2 2.5 -n 30 $AVE $STEPS $SIZE $CPUS
+echo OK
+echo plotting...
+gnuplot 2> /dev/null <<"END"
+Tc = 2.3
 beta = 0.1
-c = 1
-func(x) = x < Tc ? c * (Tc - x) ** beta : 0
-fit func(x) 'detail.dat' u 1:(abs($2)) via beta, Tc
+func(x) = x < Tc ? (Tc - x) ** beta : 0
+fit func(x) 'detail.dat' u 1:2 via beta, Tc
 set term png size 1024,768
 set output 'detail.png'
 set xlabel 'kT/J'
 set ylabel 'Magnetization'
+set yrange [0:1]
 set xtics rotate by -45 add ('Tc(Onsager)' 2.269185314)
-#set xrange [1:2.5]
-plot 'ising.dat' u 1:(abs($2)) t 'Wide data', 'detail.dat' u 1:(abs($2)) t 'Fit Data', func(x) t "M = c(Tc-T)^m"
+plot 'ising.dat' u 1:2:3 w yerrorbars t 'Wide data', 'detail.dat' u 1:2:3 w yerrorbars t 'Fit Data', func(x) t "M = c(Tc-T)^m"
 END
-echo -n OK
+grep -E '^(beta|Tc) *=' fit.log | tail -n 2
