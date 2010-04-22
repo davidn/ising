@@ -305,9 +305,10 @@ plot:
 			"set output '" << graph_filename << "'\n"\
 			"set xlabel 'kT/J'\n"\
 			"set ylabel 'Magnetization'\n"\
+			"set yrange [0:1]\n"\
 			"set xtics rotate by -45 add ('Tc(Onsager)' 2.269185314)\n"\
-			"set y2label 'Energy'\n"\
-			"set y2range [-4:]\n"\
+			"set y2label 'Energy per lattice point/J'\n"\
+			"set y2range [-2:0]\n"\
 			"set ytics nomirror\n"\
 			"set y2tics\n"\
 			"plot '"<<output_filename << "' u 1:2 t 'Magnetization'"\
@@ -318,10 +319,11 @@ plot:
 			"set term png size 1024,768\n"\
 			"set output '" << heat_filename << "'\n"\
 			"set xlabel 'kT/J'\n"\
-			"set ylabel 'Energy'\n"\
+			"set ylabel 'Energy per lattice point/J'\n"\
 			"set xtics rotate by -45 add ('Tc(Onsager)' 2.269185314)\n"\
-			"set y2label 'Heat Capacity'\n"\
+			"set y2label 'Heat Capacity per lattice point/k'\n"\
 			"set ytics nomirror\n"\
+			"set yrange [-2:0]\n"\
 			"set y2range [0:]\n"\
 			"set y2tics\n"\
 			"plot '"<<output_filename << "' u 1:3 t 'Energy'";
@@ -332,6 +334,6 @@ plot:
 			gp << "\n";
 		}
 	}
-	
+
 	return 0;
 }

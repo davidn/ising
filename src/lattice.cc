@@ -94,10 +94,9 @@ double Lattice::E()
 	{
 		for (int j = 0; j < sz; j++)
 		{
+			/*Only sum in 1 direction per dimension to prevent double counting*/
 			Eret -= J * (*this)[i][j] * ( (*this)[(i+1)%sz][j]
-			                             +(*this)[(i-1)%sz][j]
-			                             +(*this)[i][(j+1)%sz]
-			                             +(*this)[i][(j-1)%sz] );
+			                             +(*this)[i][(j+1)%sz] );
 			Eret -= muH * (*this)[i][j];
 		}
 	}
