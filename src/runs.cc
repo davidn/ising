@@ -74,6 +74,7 @@ void usage()
 		"  -j n             Use n processes (best set to number of CPUs)\n"\
 		"  -J J             Set interation parameter to J.\n"\
 		"  -H H             Set external Magnetic field to H.\n"\
+		"  -a n             Calculate variances over last n iterations.\n"
 		"  -o output.dat    Save the data to output.dat.\n"\
 		"  -g graph.png     Draw a graph of magnetisation and energy to graph.png.\n"\
 		"  -d graph.png     Plot a discrete heat capacity estimate to graph.png\n"\
@@ -105,10 +106,19 @@ int main(int argc, char ** argv)
 	strncat(command,"/ising",255);
 	parameters.push_back(command);
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"g:d:f:t:s:J:H:o:p1:2:j:n:h?")) != -1)
+	while ((opt = getopt(argc,argv,"a:g:d:f:t:s:J:H:o:p1:2:j:n:h?")) != -1)
 	{
 		switch(opt)
 		{
+			case 'a':
+				if (atoi(optarg) < 2)
+				{
+					cout << "Must average over at least 2 iterations!" << endl;
+					exit(2);
+				}
+				parameters.push_back("-a");
+				parameters.push_back(optarg);
+				break;
 			case 's':
 				if (atoi(optarg) < 1)
 				{
