@@ -110,7 +110,7 @@ After this optimisation was made it was found a third of the execution time was 
 \begin{figure}
 \center
 \includegraphics[width=\textwidth]{Optimized/tests/ising.pdf}
-\caption{Energy and Magnetisation at varying temperature.  It can be seen a phase transition occurs around Onsager's predicted critical temperature.}\label{fig:ising}
+\caption{Energy and Magnetisation at varying temperature. It can be seen a phase transition occurs around Onsager's predicted critical temperature.}\label{fig:ising}
 \end{figure}
 
 \Fref{fig:ising} shows the simulation clearly demonstrates the predicted phase transition from a magnetised low energy phase at temperatures below \unit[$T\approx2.5$]{$J/k_B$} to a non-magnetic high energy phase at higher temperatures.
@@ -118,16 +118,26 @@ After this optimisation was made it was found a third of the execution time was 
 \begin{figure}
 \center
 \includegraphics[width=\textwidth]{Optimized/tests/detail.pdf}
-\caption{Magnetisation at varying temperature with a fit to the predicted behaviour just below the critical temperature. The fit gives \unit[$T_c=2.225\pm0.004$]{$J/k_B$} and $\beta=0.058\pm0.003$.}\label{fig:detail}
+\caption{Magnetisation at varying temperature with a fit to the predicted behaviour just below the critical temperature. The fit gives \unit[$T_c=2.333\pm0.003$]{$J/k_B$} and $\beta=0.14\pm0.04$.}\label{fig:detail}
 \end{figure}
 
-\Fref{fig:detail} shows a fit\footnote{made using the non-linear least squares implementation in Gnuplot.  This iterates the Marquardt-Levenberg algorithm adjusting parameters until the sum of the squares of the difference between the model and data is minimised.} of data around the critical temperature to the $\left( T_c - T\right)^\beta$ prediction.  This gives \unit[$T_c=2.225\pm0.004$]{$J/k_B$} and $\beta=0.058\pm0.003$. 
+\Fref{fig:detail} shows a fit\footnote{All fits made using the non-linear least squares implementation in Gnuplot.  This iterates the Marquardt-Levenberg algorithm adjusting parameters until the sum of the squares of the difference between the model and data is minimised. This algorithm gives an estimate in the fit parameters, shown in the graphs.} of data around the critical temperature to the $\left( T_c - T\right)^\beta$ prediction.  This gives \unit[$T_c=2.333\pm0.003$]{$J/k_B$} and $\beta=0.14\pm0.04$.  The $T_c$ calculated is 3\% away from Onsager's theoretical result---reasonable but less accurate than the error suggests.
+
+\begin{figure}
+\center
+\includegraphics[width=\textwidth]{Optimized/tests/gridsize.pdf}
+\caption{Calculated $T_c$ as a function of the size of grid. A linear fit suggests with infinite grid \unit[$T_c=2.296\pm0.009$]{$J/k_B$}}\label{fig:gridsize}
+\end{figure}
+
+To test if the error is caused by our simulating using a finite grid, \fref{fig:gridsize} shows the calculated $T_c$ as the grid size  was varied to see if the limit for large grid sizes tended towards the Onsager solution.  Extrapolating to an infinite grid (linear fit to $1/\textrm{number of lattice points}$) gives \unit[$T_c=2.296\pm0.009$]{$J/k_B$}, which is still 1.1\% out, far beyond the fit uncertainty.  This may be caused by having under-estimated the errors, or further difference between the simulation and theoretical model.
 
 \begin{figure}
 \center
 \includegraphics[width=\textwidth]{Optimized/tests/heat.pdf}
 \caption{Energy and the specific heat capacity estimates at varying temperature. Note the maximum heat capacity is around $T_c$.}\label{fig:heat}
 \end{figure}
+
+
 
 \section{Conclusions}
 \label{sec:conclusions}
@@ -148,7 +158,7 @@ tabsize=4,
 title=\lstname,
 breaklines=true,
 frame=single,
-breakatwhitespace=false,
+breakatwhitespace=true,
 keywordstyle=\color[rgb]{0,0,1},
 commentstyle=\color[rgb]{0.133,0.545,0.133},
 stringstyle=\color[rgb]{0.627,0.126,0.941},
