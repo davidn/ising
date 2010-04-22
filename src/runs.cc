@@ -246,7 +246,11 @@ int main(int argc, char ** argv)
 		if((tempid=fork())==0)
 		{
 
-			dup2(new_process.pipefd[1],STDOUT_FILENO);
+			if(dup2(new_process.pipefd[1],STDOUT_FILENO)==-1)
+			{
+				perror("Could not reassign stdout to pipe");
+				exit(1);
+			}
 			close(new_process.pipefd[0]);
 			close(new_process.pipefd[1]);
 			char tempstr[31];
@@ -260,7 +264,7 @@ int main(int argc, char ** argv)
 		}
 		if (tempid == -1)
 		{
-			perror("Could not fork()");
+			perror("Could not fork");
 			exit(1);
 		}
 		close(new_process.pipefd[1]);
