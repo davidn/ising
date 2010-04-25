@@ -127,6 +127,7 @@ int main(int argc, char ** argv)
 			"set view map\n"\
 			"set output '"<<state_filename<<"'\n"\
 			"unset tics\n"\
+			"set palette gray\n"\
 			"set cbtics (-1, 1)\n"\
 			"set cbrange [-1:1]\n"\
 			"set cblabel 'Spin Direction'\n";
