@@ -4,7 +4,8 @@
 \usepackage{graphicx}
 \usepackage{ucs}
 \usepackage{babel}
-\usepackage{fancyref}
+\usepackage[plain]{fancyref}
+\usepackage{subfig}
 \usepackage{relsize}
 \usepackage{units}
 \usepackage{listings}
@@ -26,58 +27,77 @@
 \setlength{\parskip}{1 ex}
 
 \author{}
+\date{April 2010}
 \title{Monte-Carlo Ising Model Simulation of a Two Dimensional Ferromagnet}
 \begin{document}
 \maketitle
 
 \begin{abstract}
-some text
+Simulation of the Ising model in two dimensions by randomly walking through the configuration space of a finite lattice directed by Boltzmann probabilities shows a ordered, magnetic, low energy low temperature phase and a disordered, non-magnetic, high energy high temperature phase, transitioning at \unit[$T_c=2.338\pm0.007$]{$J/k_B$} with critical exponent $\beta=0.178\pm0.019$. Heat capacities were estimated with two methods, both peaking at \unit[$2.275\pm0.003$]{$J/k_B$}. Comparison with Onsager's theoretical analysis shows lattice-size-dependent overestimation of $T_c$ and failure of heat capacity to diverge.  With a magnetic field added, the critical temperature increases and the transition broadens, departing the from behaviour Onsager predicts.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:introduction}
-In materials the interplay between minimising energy and maximising entropy leads to complex behaviour, including phase transitions where a physical property of a system changes abruptly as thermodynamic variable changes.  Thermodynamic analysis of such problems is only tractable for very simply problems, to which real life situations can be approximated.
+In materials the interplay between minimising energy and maximising entropy leads to complex behaviour, including phase transitions where a physical property of a system changes abruptly as thermodynamic variable changes.  Thermodynamic analysis of such problems is only tractable for very simple models, to which real life situations can be approximated.
 
 The Ising model\cite{brush67} assumes an infinite lattice of points with ``spin'' pointing either up or down (taken as positive or negative for this paper).  The energy $E$ of the lattice is defined by:
 \begin{equation}
 \label{eq:ising-energy}
 E = - \sum_{\mathrm{neighbours}\: i,j} J \sigma_i \sigma_j - \sum_i \mu H \sigma_i
 \end{equation}
-Where $\sigma_i$ is the spin of the ith lattice point, $J$ is an interaction energy and $\mu H$ is a self-energy.  In the case where $\mu$ is a magnetic moment, $H$ is an external magnetic field and $J$ is a coupling constant the Ising model represents a ferromagnet where each domain interacts only with its nearest neighbours.
+Where $\sigma_i$ is the spin of the ith lattice point, $J$ is an interaction energy and $\mu H$ is a self-energy.  In the case where $\mu$ is a magnetic moment, $H$ is an external magnetic field and $J$ is a coupling constant the Ising model represents a ferromagnet where each cell interacts only with its nearest neighbours.
 
-The Ising model can be analytically solved in one and two dimensions.  In both when $J>0$ a low temperature phase with spins aligning is seen with a transition to an unordered high temperature phase at the critical temperature $T_c$.  For the case where the model represents a ferromagnet, this low temperature phase is magnetic.  In the case where $J<0$ there is still (anti-aligned order) at low temperature and no order at high temperature.  As both are not magnetic there is no physical property in which to see a phase change.
+The Ising model can be analytically solved in one and two dimensions.  In both when $J>0$ a low temperature phase with spins aligning is seen with a transition to an unordered high temperature phase at the critical temperature $T_c$.  For the case where the model represents a ferromagnet, this low temperature phase is magnetic.  In the case where $J<0$ there is still (anti-aligned) order at low temperature and no order at high temperature.  As both are not magnetic there is no physical property in which to see a phase change.
 
 Onsager \cite{onsager44} showed that in the two dimensional case $\sinh^2 \left(2J/kT_c\right)=1$, i.e.
 \begin{equation}
 \label{eq:T-c}
-T_c= \frac{2} {\ln \left( 1 + \sqrt{2}\right)} \frac{J}{k_B} = 2.269 \frac{J}{k_B}
+T_c= \frac{2} {\ln \left( 1 + \sqrt{2}\right)} \frac{J}{k_B} = 2.2692 \frac{J}{k_B}
 \end{equation}
 
-Frequently behaviour near phase transitions are approximated by behaviour $\propto \left( T_c - T\right)^\beta$, where $\beta$ is the `critical exponent'. Onsager showed that (as clarified in \cite{montroll63}) the critical exponent is $1/8$:
+Additionally, he demonstrated that the specific heat capacity around $T_c$ diverges as:
+\begin{equation}
+\label{eq:heat-capacity}
+C/k_B = \frac{8}{T_c^2 \pi} \left( \log \left( \frac{\sqrt{2}T T_c}{ |T-T_c| } \right) -1 - \frac{\pi}{4} \right)
+\end{equation}
+
+Frequently behaviour near phase transitions are approximated by behaviour $\propto \left( T_c - T\right)^\beta$, where $\beta$ is a `critical exponent'. Onsager showed that (as clarified in \cite{montroll63}) the critical exponent is $1/8$:
 \begin{eqnarray}
-\label{eq:critical-exponent}
 M & = & \left( 1- \sinh^{-4} \left(2J/kT \right) \right)^{1/8} \\
   & = & \left( 1- \sinh^{-4} \left[\ln \left(1+\sqrt{2}\right) \frac{T_c}{T} \right] \right)^{1/8} \\
-  & \approx & \left( T_c - T \right)^{1/8} \qquad \textrm{around } T=T_c
+  & \propto & \left( T_c - T \right)^{1/8} \qquad \textrm{around } T=T_c
+\label{eq:critical-exponent}
 \end{eqnarray}
 
 As no analytic solution exists in three dimensions, numerical methods for investigating the Ising model are of interest.  One such method is to directly simulate the time evolution of a finite lattice until equilibrium is reached.
 
 \medskip
 
-Further predictions about the system can be made using more general thermodynamic results.  For example we can relate the heat capacity $C$ to the standard deviation of the energy, $\sigma_E$ as it fluctuates with time\cite{rosser82-e-fluc}:
+Further predictions about the system can be made using more general thermodynamic results.  For example we can relate the heat capacity $C$ to the standard deviation of the energy, $\sigma_E$ as it fluctuates over time\cite{rosser82-e-fluc}:
 
 \begin{equation}
 \label{eq:e-fluc}
 \sigma_E^2=k_B T^2 C
 \end{equation}
 
-\section{Method}
+\section{Simulation Method}
 \label{sec:method}
 
-This simulation uses a \emph{finite} lattice of spins with periodic boundary conditions as an approximation of the infinite lattice called for by the Ising model.  The simulation progresses by choosing a point on the lattice and calculating the change in energy, defined by \fref[plain]{eq:ising-energy}, that would occur if the spin was flipped.  The Boltzmann probability of the site being in a state with sufficient energy to flip (assuming it is in contact with a resevoir at temperature $T$) $\exp\left(-\Delta E / k_B T\right)$ is calculated.  If this is greater than a random number in the interval [0,1) the lattice point is flipped.
+This simulation uses a \emph{finite} lattice of spins with periodic boundary conditions as an approximation of the infinite lattice called for by the Ising model.  The simulation progresses by choosing a point on the lattice and calculating the change in energy that would occur if the spin was flipped:
+\begin{equation}
+\Delta E_i = - 2 \sigma_i \left( \mu H + \sum_{\mathrm{neighbours }j} \sigma_j \right)
+\end{equation}
+The Boltzmann probability of the site being in a state with sufficient energy to flip (assuming it is in contact with a reservoir at temperature $T$) is calculated:
+\begin{equation}
+p = \exp\left(-\Delta E / k_B T \right)
+\end{equation}
+If this is greater than a random number in the interval [0,1) the lattice point is flipped.
 
-This is continued for sufficient time for equilibrium to reach, when the equilibrium properties of the system can be measured.  We will measure `specific' values of each property, i.e\ per lattice point.  The specific energy, $\epsilon$, is thus the energy calculated by \fref[plain]{eq:ising-energy} divided by the number of lattice points, the specific `magnetisation', $M$, is the absolute value of the mean spin. A estimate of the specific heat capacity, $C_f$, will be made by measuring the size of fluctuation of $epsilon$ using \fref[plain]{eq:e-fluc}.
+This is continued for sufficient time for equilibrium to reach, when the equilibrium properties of the system can be measured.  We will measure `specific' values of each property, i.e\ per lattice point.  The specific energy, $\epsilon$, is thus the energy calculated by \fref{eq:ising-energy} divided by the number of lattice points, the specific `magnetisation', $M$, is the absolute value of the mean spin. A estimate of the specific heat capacity, $C_f$, will be made by measuring the size of fluctuation of $epsilon$ using \fref{eq:e-fluc}.
+
+True equilibrium thermodynamic calculations require summing over all possible states of the system. This method is radically different: it essentially walks through a very small part of the configuration space, relying on the Boltzmann weighting to direct the walk to states similar to the overall equilibrium.
+
+Around the critical temperature neither phase is strongly favoured.  This causes the system fluctuations to diverge, as predicted by substituting \fref{eq:heat-capacity} into \fref{eq:e-fluc}.  As the simulation uses energy differences the walk through configuration space will only move towards states representative of equilibrium very slowly.  We can anticipate near $T_c$ the simulation will have a very large error.
 
 Simulations will be run across a range of temperatures.  This allows the behaviour of the specific energy and magnetisation to be seen as a function of temperature.  A simple `discrete' estimate of the specific heat capacity, $C_d$, will be made from the change in $\epsilon$ as temperature changes.
 
@@ -90,22 +110,47 @@ The second program, \texttt{runs}, invokes \texttt{ising} across a range of temp
 
 Both programs use double precision floating point arithmetic for all physical properties. To maximise accuracy, variables are stored in units to allow them to be around unit order.  Specifically energies are measured in units of $J$, temperatures in units of $J/k_B$ and heat capacities in units of $k_B$.
 
-For a $s$ by $s$ lattice \texttt{ising} considers $s^2$ potential flips as a single time step.  This ensures the number of potential flips a lattice point receives does not depend on the size of the grid. Which lattice point is tested is determined randomly. This prevents a pathological behaviour at high temperatures that occurs if every single lattice point is tested---in such a case it is very rare for a lattice point \emph{not} to flip and so the entire lattice flips every time step and no physical properties ever change from the initial state.
+For a $s$ by $s$ lattice \texttt{ising} considers $s^2$ potential flips as a single time step.  This ensures each lattice point expects to flip once per step independent of the size of the grid. Which lattice point is tested is determined randomly. This prevents a pathological behaviour at high temperatures that occurs if every single lattice point is tested exactly once---in such a case it is very rare for a lattice point \emph{not} to flip and so the entire lattice flips every time step and no physical properties ever change from the initial state.
 
-The equilibrium properties are calculated by \texttt{ising} from mean and variance of the final $n$ states of the simulation ($n$ is configurable). As we use values of $\epsilon$ and $M$ averaged over many states we must divide the associated variance by $n$ to determine our uncertainty in these averages (as opposed to the variance of each underlying value).
+The equilibrium properties are calculated by \texttt{ising} from the mean and variance of the final $n$ states of the simulation ($n$ is configurable). As we use values of $\epsilon$ and $M$ averaged over many states we must divide the associated variance by $n$ to determine our uncertainty in these averages (as opposed to the variance of each underlying value).
 
-Furthermore, the values of $\epsilon$ calculated at each of the final $n$ states is and average over $s^2$ lattice points.  Calculating $C_f$ requires the variance of a single lattice point, so the variance calculated from $n$ values of $\epsilon$ must be multiplied by $s^2$ to be used in \fref[plain]{eq:e-fluc}.
+Furthermore, the values of $\epsilon$ calculated at each of the final $n$ states is and average over $s^2$ lattice points.  Calculating $C_f$ requires the variance of a single lattice point, so the variance calculated from $n$ values of $\epsilon$ must be multiplied by $s^2$ to be used in \fref{eq:e-fluc}.
 
-\medskip
-
+\subsection{Performance}
 The callgrind tool of the Valgrind instrumentation framework \cite{valgrind} was used to determine in what functions \texttt{ising} was spending most of its execution time, in order to look for optimisations.
 
-This revealed that the program was spending approximately half its execution time inside the \texttt{exp()} function. At any given set of $T$, $J$ and $\mu H$ there are only 10 distinct possible flips, because the total spin of the neighbouring 4 lattice points can only be $-4$, $-2$, $0$, $2$ or $4$ and the spin of the current lattice point can only be $-1$ or $+1$.  At the start of a run, \texttt{ising} precomputed these 10 Boltzmann probabilities, removing the need to call \texttt{exp()} often.  Execution time was halved.
+This revealed that the program was spending approximately half its execution time inside the \texttt{exp()} function. At any given set of $T$, $J$ and $\mu H$ there are only 10 distinct possible energy changes, because the total spin of the neighbouring 4 lattice points can only be $-4$, $-2$, $0$, $2$ or $4$ and the spin of the current lattice point can only be $-1$ or $+1$.  At the start of a run, \texttt{ising} precomputed these 10 Boltzmann probabilities, removing the need to call \texttt{exp()} often.  Execution time was halved.
+
+Additionally, much time was spent in short but frequently called functions such as \texttt{stl::vector::operator[]()}.  The \textsc{gnu} C++ compiler option `-O2' was turned on and these calls were inlined, saving function call overhead that amounted to some 5\% of execution time.
 
 After this optimisation was made it was found a third of the execution time was spent inside \texttt{rand()}. For every potential flip this is was being called thrice---twice to choose which lattice point to flip, once to determine if it flips.  As \texttt{rand()} returns 31 bits of randomness on the target architecture (glibc on x86 Linux); if the grid is kept smaller than $2^{15}=32768$ in each direction then one call to rand is sufficient to choose a lattice point.  Implementing this improved speed by around 10\%. \texttt{rand()} remains the worst bottleneck, but no more calls can be eliminated.  Thus short of using a faster random number generator or a totally different algorithm, there are no further optimisations to make.
 
+The 80 simulations of 20000 steps of a 64x64 lattice used below took 11 minutes with all optimisations.
+
 \section{Results}
 \label{sec:results}
+
+\begin{figure}
+\subfloat[$t=0$]{\includegraphics[width=0.5\textwidth]{Optimized/tests/progress-0.png}}
+\subfloat[$t=1$]{\includegraphics[width=0.5\textwidth]{Optimized/tests/progress-1.png}}\\
+\subfloat[$t=2$]{\includegraphics[width=0.5\textwidth]{Optimized/tests/progress-2.png}}
+\subfloat[$t=3$]{\includegraphics[width=0.5\textwidth]{Optimized/tests/progress-3.png}}\\
+\subfloat[$t=10$]{\includegraphics[width=0.5\textwidth]{Optimized/tests/progress-10.png}}
+\subfloat[$t=15$]{\includegraphics[width=0.5\textwidth]{Optimized/tests/progress-15.png}}
+\caption{The state of a 15x15 lattice at \unit[$T=1$]{$J/k_B$} after $t$ steps.}\label{fig:progress}
+\end{figure}
+
+\Fref[vario]{fig:progress} shows the progression of a small lattice at \unit[$T=1$]{$J/k_B$}. Note it equilibrates at a phase with uniform positive magnetisation.
+
+\Fref[vario]{fig:ising} shows the simulation clearly demonstrates the predicted phase transition from a magnetised low energy phase at temperatures below \unit[$T\approx2.5$]{$J/k_B$} to a non-magnetic high energy phase at higher temperatures.
+
+\Fref[vario]{fig:detail} shows a fit\footnote{All fits made using the non-linear least squares implementation in Gnuplot.  This iterates the Marquardt-Levenberg algorithm adjusting parameters until the sum of the squares of the difference between the model and data is minimised. This algorithm gives an estimate in the fit parameters, shown in the graphs.} of data around the critical temperature to the $\left( T_c - T\right)^\beta$ prediction.  This gives \unit[$T_c=2.338\pm0.007$]{$J/k_B$} and $\beta=0.178\pm0.019$.
+
+\Fref{fig:gridsize} shows the calculated $T_c$ as the grid size  was varied. We clearly see consistent overestimation, worse at lower grid sizes. Extrapolating to an infinite grid (linear fit to 1/number of lattice points) gives \unit[$T_c=2.331\pm0.002$]{$J/k_B$}, which is not significantly different from our calculation with large grids.
+
+Fitting \fref{eq:heat-capacity} to the estimated heat capacities in \fref[vario]{fig:heat} gives \unit[$T_c=2.275\pm0.003$]{$J/k_B$}.
+
+Figures \ref{fig:magnetic-field} and \ref{fig:magnetic-heat} show the behaviour of energy, magnetisation and heat capacity for the system with \unit[$\mu H = 1$]{$J$}. The same phases exist, however the transition is at a much higher temperature and occurs over a larger temperature range.
 
 \begin{figure}
 \center
@@ -113,44 +158,73 @@ After this optimisation was made it was found a third of the execution time was 
 \caption{Energy and Magnetisation at varying temperature. It can be seen a phase transition occurs around Onsager's predicted critical temperature.}\label{fig:ising}
 \end{figure}
 
-\Fref{fig:ising} shows the simulation clearly demonstrates the predicted phase transition from a magnetised low energy phase at temperatures below \unit[$T\approx2.5$]{$J/k_B$} to a non-magnetic high energy phase at higher temperatures.
-
 \begin{figure}
 \center
 \includegraphics[width=\textwidth]{Optimized/tests/detail.pdf}
-\caption{Magnetisation at varying temperature with a fit to the predicted behaviour just below the critical temperature. The fit gives \unit[$T_c=2.333\pm0.003$]{$J/k_B$} and $\beta=0.14\pm0.04$.}\label{fig:detail}
+\caption{Magnetisation at varying temperature with fit to \fref{eq:critical-exponent}. The fit gives \unit[$T_c=2.338\pm0.007$]{$J/k_B$} and $\beta=0.178\pm0.019$.}\label{fig:detail}
 \end{figure}
-
-\Fref{fig:detail} shows a fit\footnote{All fits made using the non-linear least squares implementation in Gnuplot.  This iterates the Marquardt-Levenberg algorithm adjusting parameters until the sum of the squares of the difference between the model and data is minimised. This algorithm gives an estimate in the fit parameters, shown in the graphs.} of data around the critical temperature to the $\left( T_c - T\right)^\beta$ prediction.  This gives \unit[$T_c=2.333\pm0.003$]{$J/k_B$} and $\beta=0.14\pm0.04$.  The $T_c$ calculated is 3\% away from Onsager's theoretical result---reasonable but less accurate than the error suggests.
 
 \begin{figure}
 \center
-\includegraphics[width=\textwidth]{Optimized/tests/gridsize.pdf}
-\caption{Calculated $T_c$ as a function of the size of grid. A linear fit suggests with infinite grid \unit[$T_c=2.296\pm0.009$]{$J/k_B$}}\label{fig:gridsize}
+\includegraphics[width=\textwidth]{Optimized/tests/gridsize2.pdf}
+\caption{Calculated $T_c$ as a function of the size of grid. A linear fit suggests with infinite grid \unit[$T_c=2.331\pm0.002$]{$J/k_B$}}\label{fig:gridsize}
 \end{figure}
-
-To test if the error is caused by our simulating using a finite grid, \fref{fig:gridsize} shows the calculated $T_c$ as the grid size  was varied to see if the limit for large grid sizes tended towards the Onsager solution.  Extrapolating to an infinite grid (linear fit to $1/\textrm{number of lattice points}$) gives \unit[$T_c=2.296\pm0.009$]{$J/k_B$}, which is still 1.1\% out, far beyond the fit uncertainty.  This may be caused by having under-estimated the errors, or further difference between the simulation and theoretical model.
 
 \begin{figure}
 \center
-\includegraphics[width=\textwidth]{Optimized/tests/heat.pdf}
-\caption{Energy and the specific heat capacity estimates at varying temperature. Note the maximum heat capacity is around $T_c$.}\label{fig:heat}
+\includegraphics[width=\textwidth]{Optimized/tests/heat2.pdf}
+\caption{Energy and the specific heat capacity estimates at varying temperature, with fit to \fref{eq:heat-capacity}. Fit \unit[$T_c=2.275\pm0.003$]{$J/k_B$}.}\label{fig:heat}
 \end{figure}
 
+\begin{figure}
+\center
+\includegraphics[width=\textwidth]{Optimized/tests/mag1.pdf}
+\caption{As \fref{fig:ising}, but with \unit[$\mu H = 1$]{$J$}.}\label{fig:magnetic-field}
+\end{figure}
 
+\begin{figure}
+\center
+\includegraphics[width=\textwidth]{Optimized/tests/mag1-h.pdf}
+\caption{Specific heat capacities with \unit[$\mu H = 1$]{$J$}.}\label{fig:magnetic-heat}
+\end{figure}
+
+\section{Discussion}
+\label{sec:discussion}
+
+The numerical simulation differs from the theoretical model in several respects; this section will examine the results to determine whether these differences result in different physical behaviour.
+
+The two estimates of heat capacity agree---indicating \fref[vario]{eq:e-fluc}, a general thermodynamic theorem, is followed by the simulation. If this were not the case the simulation could not make good predictions of thermodynamics. The discrete method has much larger variations.  This is unsurprising as the fluctuations in energy, which increase near $T_c$ cause fluctuations in the discrete estimate, whilst the fluctuations are the basis of calculating the other.
+
+Both methods of heat capacity cannot recreate the theoretical divergence in heat capacity---the discrete estimate would need an infinite energy change whereas our energy is limited between $-2$ to $0$; the fluctuation estimate is calculated over a finite number of steps, limiting the size of energy fluctuation possible.  The fit in \fref{fig:heat} overestimates $T_c$.  More importantly as expected the simulated heat capacities clearly do not diverge, instead having a smooth, continuous maximum around \unit[$C=1.4$]{$k_B$}.
+
+The simulation consistently overestimate $T_c$. \Fref{fig:gridsize} allows us to see that this effect lessens as the size of the lattice increases, so the overestimation is at least partly due to failing to have the infinite lattice called for by the Ising model. Limits on computational resources prevent testing very large lattices, so it is unknown if there is another intrinsic systematic error.
+
+Although the simulation is known not to perfectly represent the Ising model, it can still be used to examine behaviour beyond Onsager's results.  For example, \fref{fig:magnetic-field} shows turning on a magnetic field increases the transition temperature, and broadens the transition.  This is unsurprising as the field lowers the energy of the stable state, thus requiring more energy, and so a high temperature, to overcome this.  Visual inspect shows \fref{eq:critical-exponent} is clearly not followed by the system with an external field applied.
+
+Further behaviour could be analysed by extending the program to allow variation of field without starting a new simulation.  One would anticipate a magnetic phase would be metastable in a field of opposite polarity as to switch field direction the lattice must go through a high energy state.  Such a system exhibits hysteresis in $M$ as $H$ is cycled.
 
 \section{Conclusions}
 \label{sec:conclusions}
 
+\begin{enumerate}
+\item Simulation of the Ising model in two dimensions by walking through the configuration space of a finite lattice directed by Boltzmann probabilities shows a ordered, magnetic, low energy low temperature phase and a disordered, non-magnetic, high energy high temperature phase.
+\item The phase transition of magnetisation follows a power law with critical exponent $\beta=0.178\pm0.019$ at the critical temperature \unit[$T_c=2.338\pm0.007$]{$J/k_B$}.
+\item The heat capacity of the system peaks at \unit[$T_c=2.275\pm0.003$]{$J/k_B$}.
+\item Over the tested range larger lattices give lower $T_c$ of the phase transition.
+\item Comparison with Onsager's theoretical analysis showed the simulation consistently overestimates the critical temperature and fails to show divergence in heat capacity.
+\item Applying a magnetic field increases the transition temperature and broadens the transition, no longer following a power law close to the transition.
+\end{enumerate}
+
 \bibliography{../../refs.bib}
 \bibliographystyle{unsrt}
 
+\newpage
 \appendix
 
 \section{Source Code}
 \label{sec:source-code}
 
-Following are files of code written for this project. Required also is the source from the gnuplot iostream interface \cite{gnuplot-iostream}.  The project is designed for use with a build infrastructure part of the submitted package, it can be build minimally with:
+Following are files of code written for this project. Required also is the source from the Gnuplot iostream interface \cite{gnuplot-iostream}.  The project is designed for use with a build infrastructure part of the submitted package, it can be built with:
 \lstset{
 language=sh,
 basicstyle=\small\tt,
