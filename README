@@ -1,0 +1,81 @@
+     A 2D Ising Model Simulator
+     --------------------------
+
+Quickstart
+----------
+Build the system with:
+./configure && make
+
+Plot some graphs with:
+make check
+
+Overview
+--------
+This simulator consists of two programs: ising - which runs a simulation of the
+ising model and runs - which calls ising over a range of temperatures.
+
+ising takes the following options to control the simulation:
+ -T 1.2  to set the simulation temperature.
+ -H 0.1  to set the external magnetic field.
+ -J 1    sets the interaction parameter. This is equivilant to changing T and
+         H so is entirely uncessary.
+ -s 100  chooses the size of the lattice.
+ -t 1000 configures the number of steps to iterate. Without this option ising
+         attempts to run until it detects equilibrium has been reached.
+ -a 20   changes the number of iterations over which the final state is
+         averaged.
+ -d .gif makes ising print an animation of the progress.
+
+ising outputs the following fields, separated by space:
+1. The temperature of the simulation
+2. The final magnetisation
+3. The standard deviation of the final magnetisation
+4. The final specific energy
+5. The error in the final specific energy
+6. The variance of the energy of an individual lattice point
+7. The number of steps taken.
+
+runs takes the following options to control the simulation:
+ -J, -H, -a, -t which are passed onto runs
+ -1 1.0  the starting temperature
+ -2 10   the ending temperature
+ -n 30   the number of temperature steps to take.
+ -o .dat to determine the output file.
+ -g .png tells runs to plot the energy and magnetisation as a function of
+         temperature.
+ -f .png tells runs to plot the energy and heat capacity (fluctuation)
+ -d .png tells runs to plot the energy and heat capacity (discrete) these
+         options will always print to the same file. Use -p to plot separately.
+ -S      Don't ignore the sign of magnetisation
+ -p      Don't do any calculation, just plot the (existing) date in the output
+         file.
+ -P      Plot PDF instead of PNG.
+ -j 2    Sets concurrency (for use with multi-core computers)
+
+runs outputs the following fields, space separated:
+1. The temperature of the run
+2. The final magnetisation
+3. The standard deviation of the final magnetisation
+4. The final specific energy
+5. The error in the final specific energy
+6. The discrete estimate of the heat capacity
+7. The fluctuation estimate of the heat capcity
+8. The number of steps taken.
+
+The discrete heat capacity estimate is just the change in energy divided by
+the temperature change (note that it is not for exactly the temperature
+quoted). The flucatuation estimate is the variance of energy for a single point
+divided by T^2.
+
+Units
+-----
+
+Quantity      |    Unit
+--------------|------------
+Energy        |   J
+Temperature   |   J/k
+Heat Capacity |   k
+Magnetization |   Unitless (mag.field per lattice point)
+
+where J is the interaction energy
+  and k is the Boltzmann constant
