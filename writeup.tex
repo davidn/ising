@@ -33,7 +33,7 @@
 \maketitle
 
 \begin{abstract}
-Simulation of the Ising model in two dimensions by randomly walking through the configuration space of a finite lattice directed by Boltzmann probabilities shows a ordered, magnetic, low energy low temperature phase and a disordered, non-magnetic, high energy high temperature phase, transitioning at \unit[$T_c=2.338\pm0.007$]{$J/k_B$} with critical exponent $\beta=0.178\pm0.019$. Heat capacities were estimated with two methods, both peaking at \unit[$2.275\pm0.003$]{$J/k_B$}. Comparison with Onsager's theoretical analysis shows lattice-size-dependent overestimation of $T_c$ and failure of heat capacity to diverge.  With a magnetic field added, the critical temperature increases and the transition broadens, departing the from behaviour Onsager predicts.
+The Ising model in two dimensions is simulated by taking a randomised lattice and iteratively stepping towards a microstate representative of equilibrium by flipping spins dependent on the energy change. An ordered, magnetic, low energy low temperature phase and a disordered, non-magnetic, high energy high temperature phase. The transition is at \unit[$T_c=2.338\pm0.007$]{$J/k_B$} with critical exponent $\beta=0.178\pm0.019$. Heat capacities were estimated by discreetly evaluating $C=dU/dT$ and from $C=\textrm{Var}\left(U\right)/k_B T^2$, both peaking at \unit[$2.275\pm0.003$]{$J/k_B$}. Comparison with Onsager's theoretical analysis shows lattice-size-dependent overestimation of $T_c$ and failure of heat capacity to diverge.  With a magnetic field added, the critical temperature increases and the transition broadens, departing the from behaviour Onsager predicts.
 \end{abstract}
 
 \section{Introduction}
@@ -45,11 +45,11 @@ The Ising model\cite{brush67} assumes an infinite lattice of points with ``spin'
 \label{eq:ising-energy}
 E = - \sum_{\mathrm{neighbours}\: i,j} J \sigma_i \sigma_j - \sum_i \mu H \sigma_i
 \end{equation}
-Where $\sigma_i$ is the spin of the ith lattice point, $J$ is an interaction energy and $\mu H$ is a self-energy.  In the case where $\mu$ is a magnetic moment, $H$ is an external magnetic field and $J$ is a coupling constant the Ising model represents a ferromagnet where each cell interacts only with its nearest neighbours.
+Where $\sigma_i$ is the spin of the $i^\textrm{th}$ lattice point, $J$ is an interaction energy and $\mu H$ is a self-energy.  In the case where $\mu$ is a magnetic moment, $H$ is an external magnetic field and $J$ is a coupling constant the Ising model represents a ferromagnet where each cell interacts only with its nearest neighbours.
 
 The Ising model can be analytically solved in one and two dimensions.  In both when $J>0$ a low temperature phase with spins aligning is seen with a transition to an unordered high temperature phase at the critical temperature $T_c$.  For the case where the model represents a ferromagnet, this low temperature phase is magnetic.  In the case where $J<0$ there is still (anti-aligned) order at low temperature and no order at high temperature.  As both are not magnetic there is no physical property in which to see a phase change.
 
-Onsager \cite{onsager44} showed that in the two dimensional case $\sinh^2 \left(2J/kT_c\right)=1$, i.e.
+Onsager \cite{onsager44} showed that in the two dimensional case $\sinh \left(2J/kT_c\right)=1$, i.e.
 \begin{equation}
 \label{eq:T-c}
 T_c= \frac{2} {\ln \left( 1 + \sqrt{2}\right)} \frac{J}{k_B} = 2.2692 \frac{J}{k_B}
@@ -93,13 +93,13 @@ p = \exp\left(-\Delta E / k_B T \right)
 \end{equation}
 If this is greater than a random number in the interval [0,1) the lattice point is flipped.
 
-This is continued for sufficient time for equilibrium to reach, when the equilibrium properties of the system can be measured.  We will measure `specific' values of each property, i.e\ per lattice point.  The specific energy, $\epsilon$, is thus the energy calculated by \fref{eq:ising-energy} divided by the number of lattice points, the specific `magnetisation', $M$, is the absolute value of the mean spin. A estimate of the specific heat capacity, $C_f$, will be made by measuring the size of fluctuation of $epsilon$ using \fref{eq:e-fluc}.
+This is continued for sufficient time for equilibrium to reach, when the equilibrium properties of the system can be measured.  We will measure `specific' values of each property, i.e\ per lattice point.  The specific energy, $\epsilon$, is thus the energy calculated by \fref{eq:ising-energy} divided by the number of lattice points, the specific `magnetisation', $M$, is the absolute value of the mean spin. An estimate of the specific heat capacity, $C_f$, will be made by measuring the size of fluctuation of $\epsilon$ using \fref{eq:e-fluc}.
+
+Simulations will be run across a range of temperatures.  This allows the behaviour of the specific energy and magnetisation to be seen as a function of temperature.  A simple `discrete' estimate of the specific heat capacity, $C_d$, will be made from the change in $\epsilon$ as temperature changes.
 
 True equilibrium thermodynamic calculations require summing over all possible states of the system. This method is radically different: it essentially walks through a very small part of the configuration space, relying on the Boltzmann weighting to direct the walk to states similar to the overall equilibrium.
 
 Around the critical temperature neither phase is strongly favoured.  This causes the system fluctuations to diverge, as predicted by substituting \fref{eq:heat-capacity} into \fref{eq:e-fluc}.  As the simulation uses energy differences the walk through configuration space will only move towards states representative of equilibrium very slowly.  We can anticipate near $T_c$ the simulation will have a very large error.
-
-Simulations will be run across a range of temperatures.  This allows the behaviour of the specific energy and magnetisation to be seen as a function of temperature.  A simple `discrete' estimate of the specific heat capacity, $C_d$, will be made from the change in $\epsilon$ as temperature changes.
 
 \subsection{Implementation Details}
 \label{sec:implementation-details}
@@ -110,7 +110,7 @@ The second program, \texttt{runs}, invokes \texttt{ising} across a range of temp
 
 Both programs use double precision floating point arithmetic for all physical properties. To maximise accuracy, variables are stored in units to allow them to be around unit order.  Specifically energies are measured in units of $J$, temperatures in units of $J/k_B$ and heat capacities in units of $k_B$.
 
-For a $s$ by $s$ lattice \texttt{ising} considers $s^2$ potential flips as a single time step.  This ensures each lattice point expects to flip once per step independent of the size of the grid. Which lattice point is tested is determined randomly. This prevents a pathological behaviour at high temperatures that occurs if every single lattice point is tested exactly once---in such a case it is very rare for a lattice point \emph{not} to flip and so the entire lattice flips every time step and no physical properties ever change from the initial state.
+For an $s$ by $s$ lattice \texttt{ising} considers $s^2$ potential flips as a single time step.  This ensures each lattice point expects to flip once per step independent of the size of the grid. Which lattice point is tested is determined randomly. This prevents a pathological behaviour at high temperatures that occurs if every single lattice point is tested exactly once---in such a case it is very rare for a lattice point \emph{not} to flip and so the entire lattice flips every time step and no physical properties ever change from the initial state.
 
 The equilibrium properties are calculated by \texttt{ising} from the mean and variance of the final $n$ states of the simulation ($n$ is configurable). As we use values of $\epsilon$ and $M$ averaged over many states we must divide the associated variance by $n$ to determine our uncertainty in these averages (as opposed to the variance of each underlying value).
 
