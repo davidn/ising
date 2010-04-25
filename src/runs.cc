@@ -57,7 +57,8 @@ void usage()
 		"  -j n             Use n processes (best set to number of CPUs)\n"\
 		"  -J J             Set interation parameter to J.\n"\
 		"  -H H             Set external Magnetic field to H.\n"\
-		"  -a n             Calculate variances over last n iterations.\n"
+		"  -a n             Calculate variances over last n iterations.\n"\
+		"  -S               Don't take absolute value of magnetisation.\n"\
 		"  -o output.dat    Save the data to output.dat.\n"\
 		"  -g graph.png     Draw a graph of magnetisation and energy to graph.png.\n"\
 		"  -d graph.png     Plot a discrete heat capacity estimate to graph.png\n"\
@@ -73,7 +74,7 @@ void usage()
 
 int main(int argc, char ** argv)
 {
-	int opt, num_temps=1,parallel=1,status=0;
+	int opt, num_temps=1,parallel=1,status=0,absolute=true;
 	bool d=false,f=false,p=false,pdf=false;
 	vector<process> children;
 	vector<record> records;
@@ -90,7 +91,7 @@ int main(int argc, char ** argv)
 	strncat(command,"/ising",255);
 	parameters.push_back(command);
 	/* Read command line options. */
-	while ((opt = getopt(argc,argv,"a:g:d:f:t:s:J:H:o:pP1:2:j:n:h?")) != -1)
+	while ((opt = getopt(argc,argv,"a:g:d:f:t:Ss:J:H:o:pP1:2:j:n:h?")) != -1)
 	{
 		switch(opt)
 		{
@@ -102,6 +103,9 @@ int main(int argc, char ** argv)
 				}
 				parameters.push_back("-a");
 				parameters.push_back(optarg);
+				break;
+			case 'S':
+				absolute = false;
 				break;
 			case 's':
 				if (atoi(optarg) < 1)
@@ -230,7 +234,7 @@ int main(int argc, char ** argv)
 				exit(1);
 			}
 			vector<process>::iterator this_process = find_if(children.begin(),
-			                        children.end(),is_same_process_gen(tempid));
+			                        children.end(), is_same_process_gen(tempid));
 			fscanf(fdopen(this_process->pipefd[0],"r"),
 			       "%lf %lf %lf %lf %lf %lf %d\n",
 			       &next_record.kT, &next_record.M, &next_record.M_err,
@@ -299,7 +303,7 @@ int main(int argc, char ** argv)
 	/* Print out output */
 	for(vector<record>::iterator it = records.begin(); it != records.end();++it)
 	{
-		output << it->kT << ' ' << fabs(it->M) << ' ' << it->M_err \
+		output << it->kT << ' ' << (absolute?fabs(it->M):it->M) << ' ' << it->M_err \
 			<< ' ' << it->E << ' ' << it->E_err \
 			<< ' ' << (it == records.begin() ? 0.0 : \
 				           (it->E-(it-1)->E)/(it->kT-(it-1)->kT)) \
@@ -319,8 +323,8 @@ plot:
 			"set term " << (pdf?"pdf\n":"png size 1024,768\n") << \
 			"set output '" << graph_filename << "'\n"\
 			"set xlabel 'kT/J'\n"\
-			"set ylabel 'Magnetization'\n"\
-			"set yrange [0:1]\n"\
+			"set ylabel 'Magnetization'\n"
+			"set yrange " << (absolute?"[0:1]" : "[-1:1]") << "\n"\
 			"set xtics rotate by -45 add ('Tc(Onsager)' 2.269185314)\n"\
 			"set y2label 'Energy per lattice point/J'\n"\
 			"set y2range [-2:0]\n"\
