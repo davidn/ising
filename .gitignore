@@ -46,3 +46,6 @@ config.sub
 Makefile
 Makefile.in
 *.plugin
+Optimized
+Debug
+Profiling
