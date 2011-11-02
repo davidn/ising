@@ -23,6 +23,8 @@ private:
 	void initalise_exp_lookup ();
 };
 
+std::vector<std::vector<char> >::iterator & begin(Lattice* const &lattice);
+std::vector<std::vector<char> >::iterator & end(Lattice* const &lattice);
 std::ostream & operator<<(std::ostream &os, Lattice &lattice);
 
 #endif // _LATTICE_H_

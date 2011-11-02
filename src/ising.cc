@@ -144,7 +144,7 @@ int main(int argc, char ** argv)
 		srand(tv.tv_sec ^ tv.tv_usec);
 	
 	/* Initialise a lattice object */
-	Lattice lattice = Lattice(size,J,muH,kT);
+	auto lattice = Lattice(size,J,muH,kT);
 	lattice.randomise();
 	if (do_output)
 	{

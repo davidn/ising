@@ -23,7 +23,7 @@ using namespace std;
 
 /* Initialise a num x num lattice */
 Lattice::Lattice(size_type num, double J, double muH, double kT)
-:sz(num), kT(kT), J(J), muH(muH), vector<vector<char> >(num, vector<char>::vector(num))
+:sz(num), kT(kT), J(J), muH(muH), vector<vector<char> >(num, vector<char>(num))
 {
 	this->initalise_exp_lookup ();
 }
@@ -31,11 +31,11 @@ Lattice::Lattice(size_type num, double J, double muH, double kT)
 /* Randomise the lattice to +/-1 only, uniformly spread */
 void Lattice::randomise()
 {
-	for(vector<vector<char> >::iterator it = this->begin(); it<this->end(); ++it)
+	for(auto it: this)
 	{
-		for(vector<char>::iterator at = it->begin(); at<it->end(); ++at)
+		for(auto& at: it)
 		{
-			*at = (rand() > RAND_MAX/2) ? -1 : 1;
+			at = (rand() > RAND_MAX/2) ? -1 : 1;
 		}
 	}
 }
@@ -90,11 +90,11 @@ double Lattice::E()
 double Lattice::M()
 {
 	double Mret = 0;
-	for(vector<vector<char> >::iterator it = this->begin(); it<this->end(); ++it)
+	for(auto it: this)
 	{
-		for(vector<char>::iterator at = it->begin(); at<it->end(); ++at)
+		for(auto at: it)
 		{
-			Mret += *at;
+			Mret += at;
 		}
 	}
 	return Mret / (sz * sz);
@@ -116,15 +116,25 @@ void Lattice::initalise_exp_lookup()
 	}
 }
 
+vector<vector<char> >::iterator & begin(Lattice* const &lattice)
+{
+	return begin(lattice);
+}
+
+vector<vector<char> >::iterator & end(Lattice* const &lattice)
+{
+	return end(lattice);
+}
+
 /* Allow easy lattice printing */
 ostream & operator<<(std::ostream &os, Lattice &lattice)
 {
 	/* OUTPUT_DOTS mode is for console viewing... it prints . and 0 depending
      * on spin direction.*/
 #ifdef OUTPUT_DOTS
-	for(vector<vector<char> >::iterator it = lattice.begin(); it<lattice.end(); ++it)
+	for(it: lattice)
 	{
-		for(vector<char>::iterator at = it->begin(); at < it->end(); ++at)
+		for(at: it)
 		{
 			os << ((*at > 0) ? '.' : 'O');
 		}
@@ -132,11 +142,11 @@ ostream & operator<<(std::ostream &os, Lattice &lattice)
 	}
 #elif OUTPUT_GNUPLOT
 	os << "splot '-' matrix with image\n";
-	for(vector<vector<char> >::iterator it = lattice.begin(); it<lattice.end(); ++it)
+	for(auto it: lattice)
 	{
-		for(vector<char>::iterator at = it->begin(); at < it->end(); ++at)
+		for(auto at: it)
 		{
-			os << (int)*at << ' ';
+			os << (int)at << ' ';
 		}
 		os << endl;
 	}

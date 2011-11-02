@@ -82,7 +82,7 @@ int main(int argc, char ** argv)
 	pid_t tempid;
 	const char *output_filename="ising.dat", *heat_filename = NULL, *graph_filename=NULL;
 	double kTfrom=DEFAULT_kT, kTto=DEFAULT_kT,kT;
-	vector<char *> parameters;
+	vector<const char *> parameters;
 	ofstream output;
 	progname = argv[0];
 	char command[255];
@@ -233,7 +233,7 @@ int main(int argc, char ** argv)
 					cerr << "A child went missing with status " << status << endl;
 				exit(1);
 			}
-			vector<process>::iterator this_process = find_if(children.begin(),
+			auto this_process = find_if(children.begin(),
 			                        children.end(), is_same_process_gen(tempid));
 			fscanf(fdopen(this_process->pipefd[0],"r"),
 			       "%lf %lf %lf %lf %lf %lf %d\n",
@@ -262,7 +262,7 @@ int main(int argc, char ** argv)
 			parameters.push_back("-T");
 			parameters.push_back(tempstr);
 			parameters.push_back(NULL);
-			execv(command,&parameters[0]);
+			execv(command,(char * const *)&parameters[0]);
 			perror("Could not run subprocess");
 			exit(1);
 		}
@@ -281,27 +281,27 @@ int main(int argc, char ** argv)
 			break;
 	}
 
-	for(vector<process>::iterator it = children.begin(); it != children.end(); ++it)
+	for(auto it: children)
 	{
-		if(waitpid(it->pid,NULL,0)==-1)
+		if(waitpid(it.pid,NULL,0)==-1)
 		{
 			perror("Could not collect a child (ignoring)");
 		}
-		fscanf(fdopen(it->pipefd[0],"r"),
+		fscanf(fdopen(it.pipefd[0],"r"),
 		       "%lf %lf %lf %lf %lf %lf %d\n",
 		       &next_record.kT, &next_record.M, &next_record.M_err,
 		       &next_record.E, &next_record.E_err, &next_record.variance,
 		       &next_record.steps);
 		records.push_back(next_record);
-		close(it->pipefd[0]);
-		close(it->pipefd[1]);
+		close(it.pipefd[0]);
+		close(it.pipefd[1]);
 	}
 
 	/* We can get out of order when running with parallel > 1 */
 	if (parallel > 1)
 		sort(records.begin(),records.end(),record_cmp);
 	/* Print out output */
-	for(vector<record>::iterator it = records.begin(); it != records.end();++it)
+	for(auto it = begin(records); it != end(records); ++it)
 	{
 		output << it->kT << ' ' << (absolute?fabs(it->M):it->M) << ' ' << it->M_err \
 			<< ' ' << it->E << ' ' << it->E_err \
