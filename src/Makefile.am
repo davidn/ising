@@ -16,7 +16,6 @@ bin_PROGRAMS = ising \
 
 runs_SOURCES = \
 	runs.cc\
-	../gnuplot-iostream/gnuplot-iostream.cc \
 	../gnuplot-iostream/gnuplot-iostream.h
 
 runs_LDADD = \
@@ -27,7 +26,6 @@ ising_SOURCES = \
 	ising.cc\
 	lattice.h \
 	lattice.cc \
-	../gnuplot-iostream/gnuplot-iostream.cc \
 	../gnuplot-iostream/gnuplot-iostream.h
 
 ising_LDADD = \
