@@ -22,8 +22,8 @@ using namespace std;
 #define NEIGH_SPIN(i) ((i & 0xe)-4)
 
 /* Initialise a num x num lattice */
-Lattice::Lattice(size_type num, double J, double muH, double kT)
-:sz(num), kT(kT), J(J), muH(muH), vector<vector<char> >(num, vector<char>(num))
+Lattice::Lattice(size_t num, double J, double muH, double kT)
+:sz(num), kT(kT), J(J), muH(muH), lattice(num, vector<char>(num))
 {
 	this->initalise_exp_lookup ();
 }
@@ -31,7 +31,7 @@ Lattice::Lattice(size_type num, double J, double muH, double kT)
 /* Randomise the lattice to +/-1 only, uniformly spread */
 void Lattice::randomise()
 {
-	for(auto it: this)
+	for(auto& it: lattice)
 	{
 		for(auto& at: it)
 		{
@@ -57,13 +57,13 @@ int Lattice::step()
 		int rand_bits = rand(); //31 bits of randomness
 		i= (rand_bits & 0x7FFF) * sz / 0x8000; // lowest 15 bits
 		j= (rand_bits>>15 & 0x7FFF) * sz / 0x8000; //next 15 bits
-		lookup = (*this)[(i+1)%sz][j]
-			+(*this)[(i-1)%sz][j]
-			+(*this)[i][(j+1)%sz]
-			+(*this)[i][(j-1)%sz] + 4
-			+ ((*this)[i][j] > 0 ? 1:0 );
+		lookup = lattice[(i+1)%sz][j]
+			+lattice[(i-1)%sz][j]
+			+lattice[i][(j+1)%sz]
+			+lattice[i][(j-1)%sz] + 4
+			+ (lattice[i][j] > 0 ? 1:0 );
 		if (exp_lookup[lookup] * RAND_MAX > rand())
-			change += 2 * ((*this)[i][j] = - (*this)[i][j]);
+			change += 2 * (lattice[i][j] = - lattice[i][j]);
 		/* NB: we flip the spin           ^^^    here  */
 	}
 	return change;
@@ -78,9 +78,9 @@ double Lattice::E()
 		for (int j = 0; j < sz; j++)
 		{
 			/*Only sum in 1 direction per dimension to prevent double counting*/
-			Eret -= J * (*this)[i][j] * ( (*this)[(i+1)%sz][j]
-			                             +(*this)[i][(j+1)%sz] );
-			Eret -= muH * (*this)[i][j];
+			Eret -= J * lattice[i][j] * ( lattice[(i+1)%sz][j]
+			                             +lattice[i][(j+1)%sz] );
+			Eret -= muH * lattice[i][j];
 		}
 	}
 	return Eret / (sz * sz);
@@ -90,7 +90,7 @@ double Lattice::E()
 double Lattice::M()
 {
 	double Mret = 0;
-	for(auto it: this)
+	for(auto it: lattice)
 	{
 		for(auto at: it)
 		{
@@ -116,25 +116,15 @@ void Lattice::initalise_exp_lookup()
 	}
 }
 
-vector<vector<char> >::iterator & begin(Lattice* const &lattice)
-{
-	return begin(lattice);
-}
-
-vector<vector<char> >::iterator & end(Lattice* const &lattice)
-{
-	return end(lattice);
-}
-
 /* Allow easy lattice printing */
 ostream & operator<<(std::ostream &os, Lattice &lattice)
 {
 	/* OUTPUT_DOTS mode is for console viewing... it prints . and 0 depending
      * on spin direction.*/
 #ifdef OUTPUT_DOTS
-	for(it: lattice)
+	for(auto it: lattice.lattice)
 	{
-		for(at: it)
+		for(auto at: it)
 		{
 			os << ((*at > 0) ? '.' : 'O');
 		}
@@ -142,7 +132,7 @@ ostream & operator<<(std::ostream &os, Lattice &lattice)
 	}
 #elif OUTPUT_GNUPLOT
 	os << "splot '-' matrix with image\n";
-	for(auto it: lattice)
+	for(auto it: lattice.lattice)
 	{
 		for(auto at: it)
 		{
@@ -155,4 +145,3 @@ ostream & operator<<(std::ostream &os, Lattice &lattice)
 		
 	return os;
 }
-

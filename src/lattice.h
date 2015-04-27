@@ -6,25 +6,26 @@
 #include <vector>
 #include <ostream>
 
-class Lattice : public std::vector<std::vector<char> > 
+class Lattice
 {
 public:
-	Lattice(size_type, double J=DEFAULT_J, double muH=DEFAULT_muH, double kT=DEFAULT_kT);
+	Lattice(size_t, double J=DEFAULT_J, double muH=DEFAULT_muH, double kT=DEFAULT_kT);
 	void randomise();
 	int step();
 	double M();
 	double E();
 private:
+	std::vector<std::vector<char> > lattice;
 	double kT;
 	double J;
 	double muH;
-	size_type sz;
+	size_t sz;
 	double exp_lookup[10];
 	void initalise_exp_lookup ();
+
+	friend std::ostream & operator<<(std::ostream &os, Lattice &lattice);
 };
 
-std::vector<std::vector<char> >::iterator & begin(Lattice* const &lattice);
-std::vector<std::vector<char> >::iterator & end(Lattice* const &lattice);
 std::ostream & operator<<(std::ostream &os, Lattice &lattice);
 
 #endif // _LATTICE_H_
